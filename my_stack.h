@@ -10,7 +10,7 @@ typedef int stack_type;
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-struct stack_t {
+struct Stack {
     stack_type * data;
     size_t size = 0;
     size_t capacity = 0;
@@ -47,17 +47,17 @@ struct StackErrData {
 };
 
 //------------------------------------------------------------------------------
-StackErr StackOK(stack_t * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line);
+StackErr StackOK(struct Stack * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line);
 
-StackErr StackInit(stack_t * stk, size_t capacity, struct StackErrData * err = NULL);
+StackErr StackInit(struct Stack * stk, size_t capacity, struct StackErrData * err = NULL);
 
-StackErr StackPush(stack_t * stk, stack_type value, struct StackErrData * err = NULL);
+StackErr StackPush(struct Stack * stk, stack_type value, struct StackErrData * err = NULL);
 
-StackErr StackPop(stack_t * stk, stack_type * result, struct StackErrData * err = NULL);
+StackErr StackPop(struct Stack * stk, stack_type * result, struct StackErrData * err = NULL);
 
 void print_stack_error(struct StackErrData * err);
 
-StackErr realloc_stack(stack_t * stk);
+StackErr realloc_stack(struct Stack * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line);
 //------------------------------------------------------------------------------
 
 #define STACKOK(stk, err) StackOK(stk, err, __FILE__, __func__, __LINE__)

@@ -6,7 +6,7 @@
  * @return тк функция проверяет множество аспектов то она возвращает только то была ли хоть какая-то ошибка
  *         а если надо узнать все ошибки которые были то надо передать err и считать ошибки из него
  */
-StackErr StackOK(stack_t * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line) {
+StackErr StackOK(struct Stack * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line) {
     StackErr flag = NO_ERROR;
     if (stk == NULL) {
         STACK_ERROR_SAVE(err, NULL_PTR, file_name, func_name, line)
@@ -38,7 +38,7 @@ StackErr StackOK(stack_t * stk, struct StackErrData * err, const char file_name[
 }
 
 
-StackErr StackInit(stack_t * stk, size_t capacity, struct StackErrData * err) {
+StackErr StackInit(struct Stack * stk, size_t capacity, struct StackErrData * err) {
     if (capacity <= 0) {
         STACK_ERROR_SAVE(err, INVALID_CAPACITY, __FILE__, __func__, __LINE__)
         return INVALID_CAPACITY;
@@ -61,7 +61,7 @@ StackErr StackInit(stack_t * stk, size_t capacity, struct StackErrData * err) {
 }
 
 
-StackErr StackPush(stack_t * stk, stack_type value, struct StackErrData * err) {
+StackErr StackPush(struct Stack * stk, stack_type value, struct StackErrData * err) {
     if (STACKOK(stk, err)) {
         return WAS_ERROR;
     }
@@ -76,7 +76,7 @@ StackErr StackPush(stack_t * stk, stack_type value, struct StackErrData * err) {
 }
 
 
-StackErr StackPop(stack_t * stk, stack_type * result, struct StackErrData * err) {
+StackErr StackPop(struct Stack * stk, stack_type * result, struct StackErrData * err) {
 
     if (STACKOK(stk, err)) {
         return WAS_ERROR;
@@ -107,7 +107,7 @@ void print_stack_error(struct StackErrData * err) {
 }
 
 
-StackErr realloc_stack(stack_t * stk, struct StackErrData * err,  const char file_name[], const char func_name[], const int line) {
+StackErr realloc_stack(struct Stack * stk, struct StackErrData * err,  const char file_name[], const char func_name[], const int line) {
     if (stk->size >= stk->capacity) {
         stk->capacity *= 2;
         stk->data[stk->real_capacity - 1] = POISON;
