@@ -1,104 +1,96 @@
 #include "my_stack.h"
-
-
-void StackOK(stack_t * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line) {
-    if (err != NULL) {
-        if (stk == NULL) {
-            STACK_ERROR_SAVE(err, NULL_PTR, file_name, func_name, line)
-            err[NO_ERROR].error = WAS_ERROR;
+/**
+ * @brief Эта функция проверяет стек на общие ошибки которые с ним могут произойти
+ *        и записывает их в err если указатель на него не НУЛЛ
+ * 
+ * @return тк функция проверяет множество аспектов то она возвращает только то была ли хоть какая-то ошибка
+ *         а если надо узнать все ошибки которые были то надо передать err и считать ошибки из него
+ */
+StackErr StackOK(stack_t * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line) {
+    StackErr flag = NO_ERROR;
+    if (stk == NULL) {
+        STACK_ERROR_SAVE(err, NULL_PTR, file_name, func_name, line)
+        flag = WAS_ERROR;
+    } else {
+        if (stk->data == NULL) {
+            STACK_ERROR_SAVE(err, NULL_DATA, file_name, func_name, line)
+            flag = WAS_ERROR;
         } else {
-            if (stk->data == NULL && strcmp(func_name, "StackInit") != 0) {
-                STACK_ERROR_SAVE(err, NULL_DATA, file_name, func_name, line)
-                err[NO_ERROR].error = WAS_ERROR;
+            if (stk->data[0] != LEFT_CANARY) {
+                STACK_ERROR_SAVE(err, BREAK_LEFT_CANARY, file_name, func_name, line)
+                flag = WAS_ERROR;
             }
-            if (stk->capacity <= 0) {
-                STACK_ERROR_SAVE(err, INVALID_CAPACITY, file_name, func_name, line)
-                err[NO_ERROR].error = WAS_ERROR;          
-            }
-            if (stk->size > stk->capacity) {              
-                STACK_ERROR_SAVE(err,SIZE_BIGGER_CAPACITY, file_name, func_name, line)
-                err[NO_ERROR].error = WAS_ERROR;
+            if (stk->data[stk->real_capacity - 1] != RIGHT_CANARY) {
+                STACK_ERROR_SAVE(err, BREAK_RIGHT_CANARY, file_name, func_name, line)
+                flag = WAS_ERROR;
             }
         }
+        if (stk->size > stk->capacity) {              
+            STACK_ERROR_SAVE(err, SIZE_BIGGER_CAPACITY, file_name, func_name, line)
+            flag = WAS_ERROR;
+        }
+        if (stk->capacity != stk->real_capacity - 2) {
+            STACK_ERROR_SAVE(err, REAL_CAPACITY_BAD, file_name, func_name, line)
+            flag = WAS_ERROR;
+        }
     }
+    return flag;
 }
 
 
 StackErr StackInit(stack_t * stk, size_t capacity, struct StackErrData * err) {
     if (capacity <= 0) {
         STACK_ERROR_SAVE(err, INVALID_CAPACITY, __FILE__, __func__, __LINE__)
-        printf("Was error\n");
-        return WAS_ERROR;
+        return INVALID_CAPACITY;
     }
 
-    stk->data = (stack_type*) calloc(capacity, sizeof(stack_type));
-    stk->size = 0;
+    stk->data = (stack_type*) calloc(capacity + 2, sizeof(stack_type));
+    stk->size = 1;
     stk->capacity = capacity;
+    stk->real_capacity = capacity + 2;
 
     if (stk->data == NULL) {
         STACK_ERROR_SAVE(err, ALLOC_FALED, __FILE__, __func__, __LINE__)
-        printf("Was error\n");
+        return ALLOC_FALED;
+    }
+
+    stk->data[0] = LEFT_CANARY;
+    stk->data[stk->real_capacity - 1] = RIGHT_CANARY;
+    
+    return STACKOK(stk, err);
+}
+
+
+StackErr StackPush(stack_t * stk, stack_type value, struct StackErrData * err) {
+    if (STACKOK(stk, err)) {
         return WAS_ERROR;
     }
     
-    StackOK(stk, err, __FILE__, __func__, __LINE__);
-
-    return NO_ERROR;
-}
-
-StackErr StackPush(stack_t * stk, stack_type value, struct StackErrData * err) {
-
-    StackOK(stk, err, __FILE__, __func__, __LINE__);
-    /*
-
-    
-    asserts
-    
-    
-    */
-    if (stk->size >= stk->capacity) {
-        stk->capacity *= 2;
-        stk->data = (stack_type*) realloc(stk->data, stk->capacity * sizeof(stack_type));
+    if (REALLOC_STACK(stk, err)) {
+        return ALLOC_FALED;
     }
+
     stk->data[stk->size++] = value;
-    /*
     
-    
-    asserts
-    
-    
-    */
-    StackOK(stk, err, __FILE__, __func__, __LINE__);
-
-    return NO_ERROR;
+    return STACKOK(stk, err);
 }
 
-stack_type StackPop(stack_t * stk, struct StackErrData * err) {
 
-    StackOK(stk, err, __FILE__, __func__, __LINE__);
-    /*
+StackErr StackPop(stack_t * stk, stack_type * result, struct StackErrData * err) {
+
+    if (STACKOK(stk, err)) {
+        return WAS_ERROR;
+    }
+
+    if (stk->size == 1) {
+        STACK_ERROR_SAVE(err, POP_EMPTY_STACK, __FILE__, __func__, __LINE__);
+        return POP_EMPTY_STACK;
+    }
     
-    
-    asserts
-    
-    
-    */
-    stack_type ans = stk->data[--stk->size];
+    *result = stk->data[--stk->size];
     stk->data[stk->size] = (stack_type) POISON;
-    /*
-    
-    
-    asserts
-    
-    
-    */
-    StackOK(stk, err, __FILE__, __func__, __LINE__);
 
-    return ans;
-}
-
-void save_error(struct StackErr_t_data * err, char file_name[], char function_name[], int line){
-
+    return STACKOK(stk, err);
 }
 
 void print_stack_error(struct StackErrData * err) {
@@ -112,4 +104,20 @@ void print_stack_error(struct StackErrData * err) {
             }
         }
     }
+}
+
+
+StackErr realloc_stack(stack_t * stk, struct StackErrData * err,  const char file_name[], const char func_name[], const int line) {
+    if (stk->size >= stk->capacity) {
+        stk->capacity *= 2;
+        stk->data[stk->real_capacity - 1] = POISON;
+        stk->real_capacity = stk->capacity + 2;
+        stk->data = (stack_type*) realloc(stk->data, stk->real_capacity * sizeof(stack_type));
+        if (stk->data == NULL) {
+            STACK_ERROR_SAVE(err, ALLOC_FALED, file_name, func_name, line)
+            return ALLOC_FALED;
+        }
+        stk->data[stk->real_capacity - 1] = RIGHT_CANARY;
+    }
+    return NO_ERROR;
 }
