@@ -1,6 +1,9 @@
 #ifndef MY_STACK_H
 #define MY_STACK_H
 typedef int stack_type;
+typedef unsigned int error_storage_type;
+
+#define CANARY_SIZE 2
 #define LEFT_CANARY  0xDEADBEEF
 #define RIGHT_CANARY 0xFACEFEED
 
@@ -14,57 +17,65 @@ struct Stack {
     stack_type * data;
     size_t size = 0;
     size_t capacity = 0;
-    size_t real_capacity = 0;
 };
 
 enum StackErr {
-    NO_ERROR              = 0,//нет ошибки
-    WAS_ERROR             =-1,//показатель что хоть одна ошибка была
+    NO_ERROR              =      0,//нет ошибки
+    WAS_ERROR             =     -1,//показатель наличия ошибки
     //универсальные ошибки для проверки в каждой функции
 
-    NULL_PTR              = 1,//передали нулевой указатель на стек
-    NULL_DATA             = 2,//в стеке data нулевая
-    INVALID_CAPACITY      = 3,//указана не положительная вместительность
-    SIZE_BIGGER_CAPACITY  = 4,//размер больше вместительности
-    REAL_CAPACITY_BAD     = 5,//real capacity != capacity + 2
-    BREAK_LEFT_CANARY     = 6,//левая  граница испорчена
-    BREAK_RIGHT_CANARY    = 7,//правая граница испорчена
+    NULL_PTR              = 1 << 0,//передали нулевой указатель на стек
+    NULL_DATA             = 1 << 1,//в стеке data нулевая
+    INVALID_CAPACITY      = 1 << 2,//указана не положительная вместительность
+    SIZE_BIGGER_CAPACITY  = 1 << 3,//размер больше вместительности
+    BREAK_LEFT_CANARY     = 1 << 5,//левая  граница испорчена
+    BREAK_RIGHT_CANARY    = 1 << 6,//правая граница испорчена
 
     //частные ошибки в разных функциях
 
-    ALLOC_FALED           = 8,//алокация памяти не выполнилась
-    POP_EMPTY_STACK       = 9,//попытка достать элемент из пустого стека
-    STACK_NOT_INIT        = 10,//стек не инициализирован
+    ALLOC_FALED           = 1 << 7,//алокация памяти не выполнилась
+    POP_EMPTY_STACK       = 1 << 8,//попытка достать элемент из пустого стека
+    STACK_NOT_INIT        = 1 << 9,//стек не инициализирован
 
-    ERROR_COUNT           = 11//количество вариаций ошибок
 };
 
-struct StackErrData {
-    enum StackErr error;
-    const char * file_name;
-    const char * func_name;
-    int line;
-};
+//struct StackErrData {
+//    enum StackErr error;
+//    const char * file_name;
+//    const char * func_name;
+//    int line;
+//};
 
 //------------------------------------------------------------------------------
-StackErr StackOK(struct Stack * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line);
+StackErr StackOK(struct Stack * stk, error_storage_type * err, const char file_name[], const char func_name[], const int line);
 
-StackErr StackInit(struct Stack * stk, size_t capacity, struct StackErrData * err = NULL);
+StackErr StackInit(struct Stack * stk, size_t capacity, error_storage_type * err = NULL);
 
-StackErr StackPush(struct Stack * stk, stack_type value, struct StackErrData * err = NULL);
+StackErr StackPush(struct Stack * stk, stack_type value, error_storage_type * err = NULL);
 
-StackErr StackPop(struct Stack * stk, stack_type * result, struct StackErrData * err = NULL);
+StackErr StackPop(struct Stack * stk, stack_type * result, error_storage_type * err = NULL);
 
-void print_stack_error(struct StackErrData * err);
+void print_stack_error(error_storage_type err);
 
-StackErr realloc_stack(struct Stack * stk, struct StackErrData * err, const char file_name[], const char func_name[], const int line);
+StackErr realloc_stack(struct Stack * stk, error_storage_type * err, const char file_name[], const char func_name[], const int line);
+
+void set_canary(struct Stack * stk);
 //------------------------------------------------------------------------------
 
 #define STACKOK(stk, err) StackOK(stk, err, __FILE__, __func__, __LINE__)
 #define REALLOC_STACK(str, err) realloc_stack(stk, err, __FILE__, __func__, __LINE__)
 
 //строчку (printf("Was error\n");\) можно удалить чтобы не засорять терминал уведомлениями об ошибках
-#define STACK_ERROR_SAVE(err, err_type, File_name, Func_name, Line) \
+
+
+void stack_error_save(error_storage_type * err, StackErr err_type, const char * file, const int line) {
+    //printf(err_type\n)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    printf("Was error %s:%d\n", file, line);
+    if (err != NULL) {
+        *err |= err_type;
+    }
+}
+/*#define STACK_ERROR_SAVE(err, err_type, File_name, Func_name, Line) \
     printf("Was error\n");\
     if (err != NULL) {\
         err[err_type].error = err_type;\
@@ -80,7 +91,7 @@ StackErr realloc_stack(struct Stack * stk, struct StackErrData * err, const char
 // #define PRINT(...) Print(__FUNC__, ...)
 
 
-void print_stack_error(struct StackErrData * err);
+void print_stack_error(error_storage_type * err);
 
 #endif //MY_STACK_H
 
