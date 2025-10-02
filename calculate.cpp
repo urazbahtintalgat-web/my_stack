@@ -6,12 +6,12 @@
 
 #define COMMAND_MAX_LEN 5
 
-StackErr calculate(struct Stack * stk, struct StackErrData * err) {
+CalculateErr calculate(struct Stack * stk, calculate_error_storage_type * err) {
     while (1) {
-        char command[COMMAND_MAX_LEN + 1] = {};
+        char command[COMMAND_MAX_LEN + 1] = "";
         scanf("%s", command);
 
-        CalculateCommands x = choosecommand(command);
+        CalculateCommands x = choose_command(command);
         if (x == HLT) {
             break;
         }
@@ -51,70 +51,73 @@ StackErr calculate(struct Stack * stk, struct StackErrData * err) {
     }
 }
 
-StackErr calculate_push(struct Stack * stk, int value, struct StackErrData * err = NULL) {
+CalculateErr pop_two_elements(struct Stack * stk, stack_type * x, stack_type * y, calculate_error_storage_type * err = NULL) {
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = (CalculateErr) StackPop(stk, x, err)) {
+        return possible_error;
+    }
+    if (possible_error = (CalculateErr) StackPop(stk, y, err)) {
+        return possible_error;
+    }
+}
+
+
+CalculateErr calculate_push(struct Stack * stk, stack_type value, calculate_error_storage_type * err = NULL) {
     int x = 0;
     scanf("%d", &x);
-    return StackPush(stk, x, err);
+    return (CalculateErr) StackPush(stk, x, err);
 }
 
-StackErr calculate_add(struct Stack * stk, struct StackErrData * err = NULL) {
-    stack_type x, y;
-    StackErr possible_error = NO_ERROR;
-    if (possible_error = StackPop(stk, &x, err)) {
+CalculateErr calculate_add(struct Stack * stk, calculate_error_storage_type * err = NULL) {
+    stack_type x = 0, y = 0;
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
         return possible_error;
     }
-    if (possible_error = StackPop(stk, &y, err)) {
-        return possible_error;
-    }
-    return StackPush(stk, x + y, err);
+    
+    return (CalculateErr) StackPush(stk, x + y, err);
 }
 
-StackErr calculate_sub(struct Stack * stk, struct StackErrData * err = NULL) {
-    stack_type x, y;
-    StackErr possible_error = NO_ERROR;
-    if (possible_error = StackPop(stk, &x, err)) {
+CalculateErr calculate_sub(struct Stack * stk, calculate_error_storage_type * err = NULL) {
+    stack_type x = 0, y = 0;
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
         return possible_error;
     }
-    if (possible_error = StackPop(stk, &y, err)) {
-        return possible_error;
-    }
-    return StackPush(stk, x - y, err);
+    
+    return (CalculateErr) StackPush(stk, x - y, err);
 }
 
-StackErr calculate_mul(struct Stack * stk, struct StackErrData * err = NULL) {
-    stack_type x, y;
-    StackErr possible_error = NO_ERROR;
-    if (possible_error = StackPop(stk, &x, err)) {
+CalculateErr calculate_mul(struct Stack * stk, calculate_error_storage_type * err = NULL) {
+    stack_type x = 0, y = 0;
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
         return possible_error;
     }
-    if (possible_error = StackPop(stk, &y, err)) {
-        return possible_error;
-    }
-    return StackPush(stk, x * y, err);
+    
+    return (CalculateErr) StackPush(stk, x * y, err);
 }
 
-StackErr calculate_div(struct Stack * stk, struct StackErrData * err = NULL) {
-    stack_type x, y;
-    StackErr possible_error = NO_ERROR;
-    if (possible_error = StackPop(stk, &x, err)) {
+CalculateErr calculate_div(struct Stack * stk, calculate_error_storage_type * err = NULL) {
+    stack_type x = 0, y = 0;
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
         return possible_error;
     }
-    if (possible_error = StackPop(stk, &y, err)) {
-        return possible_error;
-    }
+    
     if (y == 0) {
-        printf("error x/0\n");
+        printf("error x / 0\n");
         return WAS_ERROR;
     }
-    return StackPush(stk, x / y, err);
+    return (CalculateErr) StackPush(stk, x / y, err);
 }
 
-StackErr calculate_out(struct Stack * stk, struct StackErrData * err = NULL) {
+CalculateErr calculate_out(struct Stack * stk, calculate_error_storage_type * err = NULL) {
     stack_type x;
-    StackErr possible_error = NO_ERROR;
-    if (possible_error = StackPop(stk, &x, err)) {
+    CalculateErr possible_error = NO_ERROR;
+    if (possible_error = (CalculateErr) StackPop(stk, &x, err)) {
         return possible_error;
     }
-    printf("%d\n", x);
+    printf("%d\n", x);///зависит от stack_type
     return NO_ERROR;
 }

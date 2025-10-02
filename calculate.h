@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef unsigned int calculate_error_storage_type;
+
 enum CalculateCommands {
     PUSH = 0,
     ADD = 1,
@@ -14,7 +16,7 @@ enum CalculateCommands {
     HLT = 6
 };
 
-CalculateCommands choosecommand(char * command) {
+CalculateCommands choose_command(char * command) {
     if (strcmp(command, "PUSH") == 0) {
         return PUSH;
     } else if (strcmp(command, "ADD") == 0) {
@@ -30,21 +32,42 @@ CalculateCommands choosecommand(char * command) {
     } else if (strcmp(command, "HLT") == 0) {
         return HLT;
     }
-
 }
 
-StackErr calculate(struct Stack * stk, struct StackErrData * err = NULL);
+enum CalculateErr {
+    NO_ERROR              =      0,//нет ошибки
+    WAS_ERROR             =     -1,//показатель наличия ошибки
+    //универсальные ошибки для проверки в каждой функции
 
-StackErr calculate_push(struct Stack * stk, int value, struct StackErrData * err = NULL);
+    NULL_PTR              = 1 << 0,//передали нулевой указатель на стек
+    NULL_DATA             = 1 << 1,//в стеке data нулевая
+    INVALID_CAPACITY      = 1 << 2,//указана не положительная вместительность
+    SIZE_BIGGER_CAPACITY  = 1 << 3,//размер больше вместительности
+    BREAK_LEFT_CANARY     = 1 << 5,//левая  граница испорчена
+    BREAK_RIGHT_CANARY    = 1 << 6,//правая граница испорчена
 
-StackErr calculate_add(struct Stack * stk, struct StackErrData * err = NULL);
+    //частные ошибки в разных функциях
 
-StackErr calculate_sub(struct Stack * stk, struct StackErrData * err = NULL);
+    ALLOC_FALED           = 1 << 7,//алокация памяти не выполнилась
+    POP_EMPTY_STACK       = 1 << 8,//попытка достать элемент из пустого стека
+    STACK_NOT_INIT        = 1 << 9,//стек не инициализирован
 
-StackErr calculate_mul(struct Stack * stk, struct StackErrData * err = NULL);
+};
 
-StackErr calculate_div(struct Stack * stk, struct StackErrData * err = NULL);
+CalculateErr calculate(struct Stack * stk, calculate_error_storage_type * err = NULL);
 
-StackErr calculate_out(struct Stack * stk, struct StackErrData * err = NULL);
+CalculateErr calculate_push(struct Stack * stk, stack_type value, calculate_error_storage_type * err = NULL);
+
+CalculateErr calculate_add(struct Stack * stk, calculate_error_storage_type * err = NULL);
+
+CalculateErr calculate_sub(struct Stack * stk, calculate_error_storage_type * err = NULL);
+
+CalculateErr calculate_mul(struct Stack * stk, calculate_error_storage_type * err = NULL);
+
+CalculateErr calculate_div(struct Stack * stk, calculate_error_storage_type * err = NULL);
+
+CalculateErr calculate_out(struct Stack * stk, calculate_error_storage_type * err = NULL);
+
+CalculateErr pop_two_elements(struct Stack * stk, stack_type * x, stack_type * y, calculate_error_storage_type * err = NULL);
 
 #endif //CALCULATE_H
