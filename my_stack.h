@@ -1,7 +1,7 @@
 #ifndef MY_STACK_H
 #define MY_STACK_H
 typedef int stack_type;
-typedef unsigned int error_storage_type;
+typedef unsigned int stack_error_storage_type;
 
 #define CANARY_SIZE 2
 #define LEFT_CANARY  0xDEADBEEF
@@ -47,28 +47,32 @@ enum StackErr {
 //};
 
 //------------------------------------------------------------------------------
-StackErr StackOK(struct Stack * stk, error_storage_type * err, const char file_name[], const char func_name[], const int line);
+StackErr StackNotOK(struct Stack * stk, stack_error_storage_type * err, const char file_name[], const char func_name[], const int line);
 
-StackErr StackInit(struct Stack * stk, size_t capacity, error_storage_type * err = NULL);
+StackErr StackInit(struct Stack * stk, size_t capacity, stack_error_storage_type * err = NULL);
 
-StackErr StackPush(struct Stack * stk, stack_type value, error_storage_type * err = NULL);
+StackErr StackPush(struct Stack * stk, stack_type value, stack_error_storage_type * err = NULL);
 
-StackErr StackPop(struct Stack * stk, stack_type * result, error_storage_type * err = NULL);
+StackErr StackPop(struct Stack * stk, stack_type * result, stack_error_storage_type * err = NULL);
 
-void print_stack_error(error_storage_type err);
+void print_stack_error(stack_error_storage_type err);
 
-StackErr realloc_stack(struct Stack * stk, error_storage_type * err, const char file_name[], const char func_name[], const int line);
+StackErr realloc_stack(struct Stack * stk, stack_error_storage_type * err, const char file_name[], const char func_name[], const int line);
 
 void set_canary(struct Stack * stk);
+
+size_t GetStackSize(struct Stack * stk);
+
+size_t GetStackCapacity(struct Stack * stk);
 //------------------------------------------------------------------------------
 
-#define STACKOK(stk, err) StackOK(stk, err, __FILE__, __func__, __LINE__)
+#define STACKNOTOK(stk, err) StackNotOK(stk, err, __FILE__, __func__, __LINE__)
 #define REALLOC_STACK(str, err) realloc_stack(stk, err, __FILE__, __func__, __LINE__)
 
 //строчку (printf("Was error\n");\) можно удалить чтобы не засорять терминал уведомлениями об ошибках
 
 
-void stack_error_save(error_storage_type * err, StackErr err_type, const char * file, const int line) {
+void stack_error_save(stack_error_storage_type * err, StackErr err_type, const char * file, const int line) {
     //printf(err_type\n)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     printf("Was error %s:%d\n", file, line);
     if (err != NULL) {
@@ -91,7 +95,7 @@ void stack_error_save(error_storage_type * err, StackErr err_type, const char * 
 // #define PRINT(...) Print(__FUNC__, ...)
 
 
-void print_stack_error(error_storage_type * err);
+void print_stack_error(stack_error_storage_type err);
 
 #endif //MY_STACK_H
 

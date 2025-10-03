@@ -6,7 +6,7 @@
  * @return тк функция проверяет множество аспектов то она возвращает только то была ли хоть какая-то ошибка
  *         а если надо узнать все ошибки которые были то надо передать err и считать ошибки из него
  */
-StackErr StackOK(struct Stack * stk, error_storage_type * err, const char file_name[], const char func_name[], const int line) {
+StackErr StackNotOK(struct Stack * stk, stack_error_storage_type * err, const char file_name[], const char func_name[], const int line) {
     StackErr flag = NO_ERROR;
     if (stk == NULL) {
         stack_error_save(err, NULL_PTR, file_name, line);
@@ -38,7 +38,7 @@ void set_canary(struct Stack * stk) {
     stk->data[stk->capacity + CANARY_SIZE - 1] = RIGHT_CANARY;
 }
 
-StackErr StackInit(struct Stack * stk, size_t capacity, error_storage_type * err) {
+StackErr StackInit(struct Stack * stk, size_t capacity, stack_error_storage_type * err) {
     if (capacity <= 0) {
         stack_error_save(err, INVALID_CAPACITY, __FILE__, __LINE__);
         return INVALID_CAPACITY;
@@ -55,12 +55,12 @@ StackErr StackInit(struct Stack * stk, size_t capacity, error_storage_type * err
 
     set_canary(stk);
     
-    return STACKOK(stk, err);
+    return STACKNOTOK(stk, err);
 }
 
 
-StackErr StackPush(struct Stack * stk, stack_type value, error_storage_type * err) {
-    if (STACKOK(stk, err)) {
+StackErr StackPush(struct Stack * stk, stack_type value, stack_error_storage_type * err) {
+    if (STACKNOTOK(stk, err)) {
         return WAS_ERROR;
     }
     
@@ -71,12 +71,12 @@ StackErr StackPush(struct Stack * stk, stack_type value, error_storage_type * er
     stk->data[stk->size] = value;
     stk->size++;
     
-    return STACKOK(stk, err);
+    return STACKNOTOK(stk, err);
 }
 
 
-StackErr StackPop(struct Stack * stk, stack_type * result, error_storage_type * err) {
-    if (STACKOK(stk, err)) {
+StackErr StackPop(struct Stack * stk, stack_type * result, stack_error_storage_type * err) {
+    if (STACKNOTOK(stk, err)) {
         return WAS_ERROR;
     }
 
@@ -88,21 +88,23 @@ StackErr StackPop(struct Stack * stk, stack_type * result, error_storage_type * 
     *result = stk->data[stk->size];
     stk->data[stk->size] = (stack_type) POISON;
 
-    return STACKOK(stk, err);
+    return STACKNOTOK(stk, err);
 }
 
 
 
 
-StackErr realloc_stack(struct Stack * stk, error_storage_type * err,  const char file_name[], const char func_name[], const int line) {
+StackErr realloc_stack(struct Stack * stk, stack_error_storage_type * err,  const char file_name[], const char func_name[], const int line) {
     if (stk->size < stk->capacity) {
         return NO_ERROR;
     }
-
+    stack_type * buffer_data = stk->data;
     stk->capacity *= 2;
     stk->data = (stack_type*) realloc(stk->data, (stk->capacity + CANARY_SIZE) * sizeof(stack_type));
     if (stk->data == NULL) {
         stack_error_save(err, ALLOC_FALED, file_name, line);
+        printf("stack was not expanded\n");
+        stk->data = buffer_data;
         return ALLOC_FALED;
     }
     for (int i = stk->capacity / 2; i < stk->capacity; i++) {
@@ -114,9 +116,9 @@ StackErr realloc_stack(struct Stack * stk, error_storage_type * err,  const char
     return NO_ERROR;
 }
 
-void print_stack_error(error_storage_type err) {
+void print_stack_error(stack_error_storage_type err) {
     int flag_no_error = 1;
-    for (int i = 0; i < sizeof(error_storage_type); i++) {
+    for (int i = 0; i < sizeof(stack_error_storage_type); i++) {
         if (err | (1 << i) == 0) {
             printf("was error %d\n", i);
             flag_no_error = 0;
@@ -125,4 +127,12 @@ void print_stack_error(error_storage_type err) {
     if (flag_no_error) {
         printf("there is no errors\n");
     }
+}
+
+size_t GetStackSize(struct Stack * stk) {
+    return stk->size - CANARY_SIZE / 2;
+}
+
+size_t GetStackCapacity(struct Stack * stk) {
+    return stk->capacity;
 }
