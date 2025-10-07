@@ -10,6 +10,7 @@ StackErr StackNotOK(struct Stack * stk, stack_error_storage_type * err, const ch
     StackErr flag = NO_ERROR;
     if (stk == NULL) {
         stack_error_save(err, NULL_PTR, file_name, line);
+        printf("STACK_NULL_PTR ERROR %s:%d", file_name, line);
         flag = WAS_ERROR;
     } else {
         if (stk->data == NULL) {
@@ -126,6 +127,14 @@ void print_stack_error(stack_error_storage_type err) {
     }
     if (flag_no_error) {
         printf("there is no errors\n");
+    }
+}
+
+void stack_error_save(stack_error_storage_type * err, StackErr err_type, const char * file, const int line) {
+    //printf(err_type\n)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    printf("Was error %s:%d\n", file, line);
+    if (err != NULL) {
+        *err |= err_type;
     }
 }
 

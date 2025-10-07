@@ -72,13 +72,7 @@ size_t GetStackCapacity(struct Stack * stk);
 //строчку (printf("Was error\n");\) можно удалить чтобы не засорять терминал уведомлениями об ошибках
 
 
-void stack_error_save(stack_error_storage_type * err, StackErr err_type, const char * file, const int line) {
-    //printf(err_type\n)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    printf("Was error %s:%d\n", file, line);
-    if (err != NULL) {
-        *err |= err_type;
-    }
-}
+void stack_error_save(stack_error_storage_type * err, StackErr err_type, const char * file, const int line);
 /*#define STACK_ERROR_SAVE(err, err_type, File_name, Func_name, Line) \
     printf("Was error\n");\
     if (err != NULL) {\

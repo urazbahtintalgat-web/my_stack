@@ -16,45 +16,32 @@ enum CalculateCommands {
     HLT = 6
 };
 
-CalculateCommands choose_command(char * command) {
-    if (strcmp(command, "PUSH") == 0) {
-        return PUSH;
-    } else if (strcmp(command, "ADD") == 0) {
-        return ADD;
-    } else if (strcmp(command, "SUB") == 0) {
-        return SUB;
-    } else if (strcmp(command, "MUL") == 0) {
-        return MUL;
-    } else if (strcmp(command, "DIV") == 0) {
-        return DIV;
-    } else if (strcmp(command, "OUT") == 0) {
-        return OUT;
-    } else if (strcmp(command, "HLT") == 0) {
-        return HLT;
-    }
-}
+CalculateCommands choose_command(char * command);
 
 enum CalculateErr {
-    NO_ERROR              =      0,//нет ошибки
-    WAS_ERROR             =     -1,//показатель наличия ошибки
+    CALCULATE_NO_ERROR              =      0,//нет ошибки
+    CALCULATE_WAS_ERROR             =     -1,//показатель наличия ошибки
+    CALCULATE_STACK_ERROR           =     -2,//показатель наличия ошибки в стеке
     //универсальные ошибки для проверки в каждой функции
 
-    NULL_PTR              = 1 << 0,//передали нулевой указатель на стек
-    NULL_DATA             = 1 << 1,//в стеке data нулевая
-    INVALID_CAPACITY      = 1 << 2,//указана не положительная вместительность
-    SIZE_BIGGER_CAPACITY  = 1 << 3,//размер больше вместительности
-    BREAK_LEFT_CANARY     = 1 << 5,//левая  граница испорчена
-    BREAK_RIGHT_CANARY    = 1 << 6,//правая граница испорчена
+    CALCULATE_NULL_PTR              = 1 << 0,//передали нулевой указатель на стек
+    CALCULATE_NULL_DATA             = 1 << 1,//в стеке data нулевая
+    CALCULATE_INVALID_CAPACITY      = 1 << 2,//указана не положительная вместительность
+    CALCULATE_SIZE_BIGGER_CAPACITY  = 1 << 3,//размер больше вместительности
+    CALCULATE_BREAK_LEFT_CANARY     = 1 << 5,//левая  граница испорчена
+    CALCULATE_BREAK_RIGHT_CANARY    = 1 << 6,//правая граница испорчена
 
     //частные ошибки в разных функциях
 
-    ALLOC_FALED           = 1 << 7,//алокация памяти не выполнилась
-    POP_EMPTY_STACK       = 1 << 8,//попытка достать элемент из пустого стека
-    STACK_NOT_INIT        = 1 << 9,//стек не инициализирован
+    CALCULATE_ALLOC_FALED           = 1 << 7,//алокация памяти не выполнилась
+    CALCULATE_POP_EMPTY_STACK       = 1 << 8,//попытка достать элемент из пустого стека
+    CALCULATE_STACK_NOT_INIT        = 1 << 9,//стек не инициализирован
 
 };
 
-CalculateErr calculate(struct Stack * stk, calculate_error_storage_type * err = NULL);
+CalculateErr machine_calculate(struct Stack * stk,char * file_name, calculate_error_storage_type * err = NULL);
+
+CalculateErr human_calculate(struct Stack * stk, calculate_error_storage_type * err = NULL);
 
 CalculateErr calculate_push(struct Stack * stk, stack_type value, calculate_error_storage_type * err = NULL);
 
