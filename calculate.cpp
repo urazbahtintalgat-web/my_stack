@@ -4,11 +4,12 @@
 #include "work_with_file.h"
 
 #include <stdio.h>
+#include <string.h> 
 
 #define COMMAND_MAX_LEN 5
 
 
-CalculateErr machine_calculate(struct Stack * stk, char * file_name, calculate_error_storage_type * err = NULL) {
+CalculateErr machine_calculate(struct Stack * stk, char * file_name, calculate_error_storage_type * err) {
     size_t read = 0;
     char * whole_machine_text = readfile(file_name, &read);
     if (whole_machine_text == NULL) {
@@ -60,6 +61,7 @@ CalculateErr machine_calculate(struct Stack * stk, char * file_name, calculate_e
             break;
         }
     }
+    return CALCULATE_NO_ERROR;
 }
 
 
@@ -126,15 +128,13 @@ CalculateErr pop_two_elements(struct Stack * stk, stack_type * x, stack_type * y
 
 
 CalculateErr calculate_push(struct Stack * stk, stack_type value, calculate_error_storage_type * err) {
-    int x = 0;
-    scanf("%d", &x);
-    return (StackPush(stk, x, err)) ? CALCULATE_STACK_ERROR : CALCULATE_NO_ERROR;
+    return (StackPush(stk, value, err)) ? CALCULATE_STACK_ERROR : CALCULATE_NO_ERROR;
 }
 
 CalculateErr calculate_add(struct Stack * stk, calculate_error_storage_type * err) {
     stack_type x = 0, y = 0;
     CalculateErr possible_error = CALCULATE_NO_ERROR;
-    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
+    if ((possible_error = pop_two_elements(stk, &x, &y, err))) {
         return possible_error;
     }
     
@@ -144,7 +144,7 @@ CalculateErr calculate_add(struct Stack * stk, calculate_error_storage_type * er
 CalculateErr calculate_sub(struct Stack * stk, calculate_error_storage_type * err) {
     stack_type x = 0, y = 0;
     CalculateErr possible_error = CALCULATE_NO_ERROR;
-    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
+    if ((possible_error = pop_two_elements(stk, &x, &y, err))) {
         return possible_error;
     }
     
@@ -154,7 +154,7 @@ CalculateErr calculate_sub(struct Stack * stk, calculate_error_storage_type * er
 CalculateErr calculate_mul(struct Stack * stk, calculate_error_storage_type * err) {
     stack_type x = 0, y = 0;
     CalculateErr possible_error = CALCULATE_NO_ERROR;
-    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
+    if ((possible_error = pop_two_elements(stk, &x, &y, err))) {
         return possible_error;
     }
     
@@ -164,7 +164,7 @@ CalculateErr calculate_mul(struct Stack * stk, calculate_error_storage_type * er
 CalculateErr calculate_div(struct Stack * stk, calculate_error_storage_type * err) {
     stack_type x = 0, y = 0;
     CalculateErr possible_error = CALCULATE_NO_ERROR;
-    if (possible_error = pop_two_elements(stk, &x, &y, err)) {
+    if ((possible_error = pop_two_elements(stk, &x, &y, err))) {
         return possible_error;
     }
     

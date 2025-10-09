@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 
 /**
@@ -71,7 +72,7 @@ int count_lines(const char* line_massive) {
 
     char* ind = (char*) line_massive;
     int amount = 1;
-    while (ind = strchr(ind, '\n')) {
+    while ((ind = strchr(ind, '\n'))) {
         amount++;
         ind++;
     }
@@ -103,7 +104,7 @@ struct line* make_line_massive(char* line_massive, int line_amount) {
     char* ind = line_massive;
     char* saved_ind = ind;
     
-    while (ind = strchr(ind, '\n')) {
+    while ((ind = strchr(ind, '\n'))) {
         lines[n].end = ind - 1;
         n++;
         lines[n].begin = ind + 1;

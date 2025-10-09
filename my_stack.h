@@ -64,6 +64,8 @@ void set_canary(struct Stack * stk);
 size_t GetStackSize(struct Stack * stk);
 
 size_t GetStackCapacity(struct Stack * stk);
+
+void StackDestroy(struct Stack * stack);
 //------------------------------------------------------------------------------
 
 #define STACKNOTOK(stk, err) StackNotOK(stk, err, __FILE__, __func__, __LINE__)
@@ -81,7 +83,7 @@ void stack_error_save(stack_error_storage_type * err, StackErr err_type, const c
         err[err_type].func_name = Func_name;\
         err[err_type].line = Line;\
         err[NO_ERROR].error = WAS_ERROR;\
-    }/*else {\
+    } else {\
         return WAS_ERROR;\
     }*/
 

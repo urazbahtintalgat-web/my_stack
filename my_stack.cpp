@@ -56,7 +56,11 @@ StackErr StackInit(struct Stack * stk, size_t capacity, stack_error_storage_type
 
     set_canary(stk);
     
-    return STACKNOTOK(stk, err);
+    if (STACKNOTOK(stk, err) != 0) {
+        print_stack_error(*err);
+        return WAS_ERROR;
+    }
+    return NO_ERROR;
 }
 
 
@@ -72,7 +76,10 @@ StackErr StackPush(struct Stack * stk, stack_type value, stack_error_storage_typ
     stk->data[stk->size] = value;
     stk->size++;
     
-    return STACKNOTOK(stk, err);
+    if (STACKNOTOK(stk, err)) {
+        return WAS_ERROR;
+    }
+    return NO_ERROR;
 }
 
 
@@ -89,7 +96,10 @@ StackErr StackPop(struct Stack * stk, stack_type * result, stack_error_storage_t
     *result = stk->data[stk->size];
     stk->data[stk->size] = (stack_type) POISON;
 
-    return STACKNOTOK(stk, err);
+    if (STACKNOTOK(stk, err)) {
+        return WAS_ERROR;
+    }
+    return NO_ERROR;
 }
 
 
@@ -120,7 +130,7 @@ StackErr realloc_stack(struct Stack * stk, stack_error_storage_type * err,  cons
 void print_stack_error(stack_error_storage_type err) {
     int flag_no_error = 1;
     for (int i = 0; i < sizeof(stack_error_storage_type); i++) {
-        if (err | (1 << i) == 0) {
+        if ((err | (1 << i)) == 0) {
             printf("was error %d\n", i);
             flag_no_error = 0;
         }
@@ -132,7 +142,7 @@ void print_stack_error(stack_error_storage_type err) {
 
 void stack_error_save(stack_error_storage_type * err, StackErr err_type, const char * file, const int line) {
     //printf(err_type\n)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    printf("Was error %s:%d\n", file, line);
+    printf("Was stack error %s:%d\n", file, line);
     if (err != NULL) {
         *err |= err_type;
     }
@@ -144,4 +154,22 @@ size_t GetStackSize(struct Stack * stk) {
 
 size_t GetStackCapacity(struct Stack * stk) {
     return stk->capacity;
+}
+
+void StackDestroy(struct Stack * stack) {
+    if (stack == NULL) {
+        printf("try destroy NULL stack\n");
+        return;
+    }
+
+    if (stack->data != NULL) {
+        free(stack->data);
+        stack->data = NULL;
+        printf("Stack data freed\n");
+    } else {
+        printf("error stack data was NULL\n");
+    }
+
+    stack->size = 0;
+    stack->capacity = 0;
 }

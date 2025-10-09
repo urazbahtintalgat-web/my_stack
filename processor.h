@@ -2,12 +2,14 @@
 #define PROCESSOR_H
 #include "my_stack.h"
 typedef unsigned int processor_error_storage_type;
+#define REGISTERS_AMOUNT 16
 
 struct ProcessorStruct {
     Stack data;
-    char* code;
-    char* program_counter;
-    int registers[16];
+    unsigned char* code;
+    unsigned char* program_counter;
+    size_t code_size;
+    int registers[REGISTERS_AMOUNT];
 };
 
 enum ProcessorErr {
@@ -18,6 +20,10 @@ enum ProcessorErr {
     PROCESSOR_NULL_CODE            = 1 << 1,
     PROCESSOR_NULL_PROGRAM_COUNTER = 1 << 2,
     PROCESSOR_REGISTERS_OVER       = 1 << 3,
+    CODE_FILE_NOT_OPENED           = 1 << 4,
+    PROCESSOR_ALLOC_FAILED         = 1 << 5,
+    PROCESSOR_INVALID_CODE_SIZE    = 1 << 6,
+    PROCESSOR_PC_OUT_OF_CODE       = 1 << 7
 };
 
 //----------------------------------------------------------------
