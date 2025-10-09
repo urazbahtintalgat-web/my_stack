@@ -61,105 +61,108 @@ int main() {
 
     ///НАЧАЛО СКАНИРОВАНИЯ И ПЕРЕВОДА В КОД
     int ip = 0;
-    for (size_t i = 0; i < comand_amount; i++) {
-        if (comands[i].begin[0] == ':') {//ПРОПИСАТЬ ЕСЛИ ЭТО МЕТКА
-            int label = atoi(comands[i].begin + 1);
-            if (label >= 0 && label < LABEL_AMOUNT) {
-                labels[label] = ip;
-                printf("line %2d label :%d -> ip%d\n", (int)i, label, labels[label]);
-            } else {
-                printf("label %d out of range (0-%d)\n", label, LABEL_AMOUNT - 1);
-                return 1;
-            }
-            continue;
-        }
+    for (int dobule_run = 0; dobule_run < 2; dobule_run++) {
 
-        int now_comand_length = 0;
-        while (now_comand_length < COMANDS_MAX_LENGTH && 
-               comands[i].begin[now_comand_length] != '\0' && 
-               comands[i].begin[now_comand_length] != ' ' && 
-               comands[i].begin[now_comand_length] != '\t' && 
-               comands[i].begin[now_comand_length] != '\n') {
-            now_comand_length++;
-        }
-        if (now_comand_length == 0) {//если например пропуск строки
-            continue;
-        }
-        printf("line %2d ", (int)i);////////////////////
+        int ip = 0;
+        printf("-----RUN %d-----\n", dobule_run + 1);
 
-        int command_found = 0;
-        
-        for (int cmd = 0; cmd < (sizeof(ComandNames) / sizeof(ComandNames[0])); cmd++) {
-            if (ComandNames[cmd][0] == '\0') continue;
-            
-            if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) == 0 && now_comand_length == strlen(ComandNames[cmd]) - 4) {
-                printf("(number %2d) comand %9s ", ip, ComandNames[cmd]);//////////////
-                command_found = 1;
-                if (fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
-                    printf("assembler fweite error %s:%d\n", __FILE__, __LINE__);
+
+        for (size_t i = 0; i < comand_amount; i++) {
+            if (comands[i].begin[0] == ':') {//ПРОПИСАТЬ ЕСЛИ ЭТО МЕТКА
+                int label = atoi(comands[i].begin + 1);
+                if (label >= 0 && label < LABEL_AMOUNT) {
+                    labels[label] = ip;
+                    printf("line %2d label :%d -> ip%d\n", (int)i, label, labels[label]);
+                } else {
+                    printf("label %d out of range (0-%d)\n", label, LABEL_AMOUNT - 1);
                     return 1;
                 }
-                ip++;
-                switch (cmd) {
-                    case ASM_PUSH: {
-                        int value = atoi(comands[i].begin + now_comand_length);
-                        printf("(number %2d) %d",ip , value);////////////////////////
-                        if (fwrite(&value, sizeof(int), 1, machine_text) != 1) {
-                            printf("assembler fwrite error with push value %s:%d\n", __FILE__, __LINE__);
-                            return 1;
-                        }
-                        ip++;
-                        break;
-                    }
-                    case ASM_PUSHR: {
-                        printf("(number %2d) ", ip);
-                        if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
-                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
-                            return 1;
-                        }
-                        ip++;
-                        break;
-                    }
-                    case ASM_POPR: {
-                        printf("(number %2d) ", ip);
-                        if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
-                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
-                            return 1;
-                        }
-                        ip++;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-                if (ASM_JMP <= cmd && cmd <= ASM_JNE) {
-                    const char * label_start = comands[i].begin + now_comand_length;
+                continue;
+            }
 
-                    while (*label_start == ' ' || *label_start == '\t')
-                    label_start++;
-                
-                    if (*label_start == ':') {
-                        int label = atoi(label_start + 1);
-                        fwrite(&labels[label], sizeof(int), 1, machine_text);
-                        printf("(number %2d) jump -> :%d", ip, labels[label]);
-                    } else {
-                        int jump_ip = atoi(label_start);
-                        fwrite(&jump_ip, sizeof(int), 1, machine_text);
-                        printf("(number %2d) jump -> ip%d", ip, jump_ip);
+            int now_comand_length = 0;
+            while (now_comand_length < COMANDS_MAX_LENGTH && 
+                   comands[i].begin[now_comand_length] != '\0' && 
+                   comands[i].begin[now_comand_length] != ' ' && 
+                   comands[i].begin[now_comand_length] != '\t' && 
+                   comands[i].begin[now_comand_length] != '\n') {
+                now_comand_length++;
+            }
+            if (now_comand_length == 0) {//если например пропуск строки
+                continue;
+            }
+            printf("line %2d ", (int)i);////////////////////
+
+            int command_found = 0;
+
+            for (int cmd = 0; cmd < (sizeof(ComandNames) / sizeof(ComandNames[0])); cmd++) {
+                if (ComandNames[cmd][0] == '\0') continue;
+
+                if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) == 0 && now_comand_length == strlen(ComandNames[cmd]) - 4) {
+                    printf("(number %2d) comand %9s ", ip, ComandNames[cmd]);//////////////
+                    command_found = 1;
+                    if (fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
+                        printf("assembler fweite error %s:%d\n", __FILE__, __LINE__);
+                        return 1;
                     }
                     ip++;
+                    switch (cmd) {
+                        case ASM_PUSH: {
+                            int value = atoi(comands[i].begin + now_comand_length);
+                            printf("(number %2d) %d",ip , value);////////////////////////
+                            if (fwrite(&value, sizeof(int), 1, machine_text) != 1) {
+                                printf("assembler fwrite error with push value %s:%d\n", __FILE__, __LINE__);
+                                return 1;
+                            }
+                            ip++;
+                            break;
+                        }
+                        case ASM_PUSHR: {
+                            printf("(number %2d) ", ip);
+                            if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                                printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                                return 1;
+                            }
+                            ip++;
+                            break;
+                        }
+                        case ASM_POPR: {
+                            printf("(number %2d) ", ip);
+                            if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                                printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                                return 1;
+                            }
+                            ip++;
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    if (ASM_JMP <= cmd && cmd <= ASM_JNE) {
+                        const char * label_start = comands[i].begin + now_comand_length;
+
+                        while (*label_start == ' ' || *label_start == '\t')
+                        label_start++;
+                    
+                        if (*label_start == ':') {
+                            int label = atoi(label_start + 1);
+                            fwrite(&labels[label], sizeof(int), 1, machine_text);
+                            printf("(number %2d) jump -> :%d", ip, labels[label]);
+                        } else {
+                            int jump_ip = atoi(label_start);
+                            fwrite(&jump_ip, sizeof(int), 1, machine_text);
+                            printf("(number %2d) jump -> ip%d", ip, jump_ip);
+                        }
+                        ip++;
+                    }
+                    printf("\n");////////////////
                 }
-                printf("\n");////////////////
+            }
+            if (command_found == 0) {
+                printf("not found comand\n");
+                return 1;
             }
         }
-
-        if (!command_found) {
-            printf("not found comand\n");
-            return 1;
-        }
-
-
-
 
 
 
