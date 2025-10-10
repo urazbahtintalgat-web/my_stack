@@ -1,11 +1,46 @@
-0 10
-0 10
-3
-0 4
-0 6
-0 6
-3
-3
-2
-5
-6
+comands amount 14
+
+PUSH 10
+PUSH 10
+MUL
+:5
+PUSH 4
+PUSH 6
+PUSH 6
+MUL
+MUL
+SUB
+POPR RA
+PUSHR RA
+OUT
+HLT
+-----RUN 1-----
+line  0 (number  0) comand  ASM_PUSH (number  1) 10
+line  1 (number  2) comand  ASM_PUSH (number  3) 10
+line  2 (number  4) comand   ASM_MUL 
+line  3 label :5 -> ip5
+line  4 (number  5) comand  ASM_PUSH (number  6) 4
+line  5 (number  7) comand  ASM_PUSH (number  8) 6
+line  6 (number  9) comand  ASM_PUSH (number 10) 6
+line  7 (number 11) comand   ASM_MUL 
+line  8 (number 12) comand   ASM_MUL 
+line  9 (number 13) comand   ASM_SUB 
+line 10 (number 14) comand  ASM_POPR (number 15) 
+line 11 (number 16) comand ASM_PUSHR (number 17) 
+line 12 (number 18) comand   ASM_OUT 
+line 13 (number 19) comand   ASM_HLT 
+-----RUN 2-----
+line  0 (number  0) comand  ASM_PUSH (number  1) 10
+line  1 (number  2) comand  ASM_PUSH (number  3) 10
+line  2 (number  4) comand   ASM_MUL 
+line  3 label :5 -> ip5
+line  4 (number  5) comand  ASM_PUSH (number  6) 4
+line  5 (number  7) comand  ASM_PUSH (number  8) 6
+line  6 (number  9) comand  ASM_PUSH (number 10) 6
+line  7 (number 11) comand   ASM_MUL 
+line  8 (number 12) comand   ASM_MUL 
+line  9 (number 13) comand   ASM_SUB 
+line 10 (number 14) comand  ASM_POPR (number 15) register RA
+line 11 (number 16) comand ASM_PUSHR (number 17) register RA
+line 12 (number 18) comand   ASM_OUT 
+line 13 (number 19) comand   ASM_HLT 

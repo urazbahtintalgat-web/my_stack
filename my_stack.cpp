@@ -15,19 +15,23 @@ StackErr StackNotOK(struct Stack * stk, stack_error_storage_type * err, const ch
     } else {
         if (stk->data == NULL) {
             stack_error_save(err, NULL_DATA, file_name, line);
+            printf("STACK_NULL_DATA ERROR %s:%d", file_name, line);
             flag = WAS_ERROR;
         } else {
             if (stk->data[0] != LEFT_CANARY) {
                 stack_error_save(err, BREAK_LEFT_CANARY, file_name, line);
+                printf("STACK_LEFT_CANARY ERROR %s:%d", file_name, line);
                 flag = WAS_ERROR;
             }
-            if (stk->data[stk->capacity + CANARY_SIZE] != RIGHT_CANARY) {
+            if (stk->data[stk->capacity + CANARY_SIZE - 1] != RIGHT_CANARY) {
                 stack_error_save(err, BREAK_RIGHT_CANARY, file_name, line);
+                printf("STACK_RIGHT_CANARY ERROR %s:%d", file_name, line);
                 flag = WAS_ERROR;
             }
         }
         if (stk->size - CANARY_SIZE / 2 > stk->capacity) {              
             stack_error_save(err, SIZE_BIGGER_CAPACITY, file_name, line);
+            printf("STACK_SIZE ERROR %s:%d", file_name, line);
             flag = WAS_ERROR;
         }
     }

@@ -101,7 +101,7 @@ int main() {
                 if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) == 0 && now_comand_length == strlen(ComandNames[cmd]) - 4) {
                     printf("(number %2d) comand %9s ", ip, ComandNames[cmd]);//////////////
                     command_found = 1;
-                    if (fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
+                    if (dobule_run == 1 && fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
                         printf("assembler fweite error %s:%d\n", __FILE__, __LINE__);
                         return 1;
                     }
@@ -110,7 +110,7 @@ int main() {
                         case ASM_PUSH: {
                             int value = atoi(comands[i].begin + now_comand_length);
                             printf("(number %2d) %d",ip , value);////////////////////////
-                            if (fwrite(&value, sizeof(int), 1, machine_text) != 1) {
+                            if (dobule_run == 1 && fwrite(&value, sizeof(int), 1, machine_text) != 1) {
                                 printf("assembler fwrite error with push value %s:%d\n", __FILE__, __LINE__);
                                 return 1;
                             }
@@ -119,7 +119,7 @@ int main() {
                         }
                         case ASM_PUSHR: {
                             printf("(number %2d) ", ip);
-                            if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                            if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
                                 printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
                                 return 1;
                             }
@@ -128,7 +128,7 @@ int main() {
                         }
                         case ASM_POPR: {
                             printf("(number %2d) ", ip);
-                            if (!fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                            if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
                                 printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
                                 return 1;
                             }
@@ -143,15 +143,17 @@ int main() {
 
                         while (*label_start == ' ' || *label_start == '\t')
                         label_start++;
-                    
-                        if (*label_start == ':') {
-                            int label = atoi(label_start + 1);
-                            fwrite(&labels[label], sizeof(int), 1, machine_text);
-                            printf("(number %2d) jump -> :%d", ip, labels[label]);
-                        } else {
-                            int jump_ip = atoi(label_start);
-                            fwrite(&jump_ip, sizeof(int), 1, machine_text);
-                            printf("(number %2d) jump -> ip%d", ip, jump_ip);
+                        
+                        if (dobule_run == 1) {
+                            if (*label_start == ':') {
+                                int label = atoi(label_start + 1);
+                                fwrite(&labels[label], sizeof(int), 1, machine_text);
+                                printf("(number %2d) jump -> :%d", ip, labels[label]);
+                            } else {
+                                int jump_ip = atoi(label_start);
+                                fwrite(&jump_ip, sizeof(int), 1, machine_text);
+                                printf("(number %2d) jump -> ip%d", ip, jump_ip);
+                            }
                         }
                         ip++;
                     }

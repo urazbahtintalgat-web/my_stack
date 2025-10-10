@@ -39,7 +39,6 @@ enum CalculateErr {
 
 };
 
-CalculateErr machine_calculate(struct Stack * stk,char * file_name, calculate_error_storage_type * err = NULL);
 
 CalculateErr human_calculate(struct Stack * stk, calculate_error_storage_type * err = NULL);
 

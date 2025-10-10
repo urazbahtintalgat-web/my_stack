@@ -1,29 +1,30 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 #include "my_stack.h"
+#include "asembler.h"
 typedef unsigned int processor_error_storage_type;
 #define REGISTERS_AMOUNT 16
 
 struct ProcessorStruct {
     Stack data;
-    unsigned char* code;
-    unsigned char* program_counter;
+    int * code;
+    int program_counter;
     size_t code_size;
     int registers[REGISTERS_AMOUNT];
 };
 
 enum ProcessorErr {
-    PROCESSOR_WAS_ERROR            =     -1,
-    PROCESSOR_NO_ERROR             =      0,
+    PROCESSOR_WAS_ERROR                =     -1,
+    PROCESSOR_NO_ERROR                 =      0,
     //-----------------------------------
-    PROCESSOR_NOT_INIT             = 1 << 0,
-    PROCESSOR_NULL_CODE            = 1 << 1,
-    PROCESSOR_NULL_PROGRAM_COUNTER = 1 << 2,
-    PROCESSOR_REGISTERS_OVER       = 1 << 3,
-    CODE_FILE_NOT_OPENED           = 1 << 4,
-    PROCESSOR_ALLOC_FAILED         = 1 << 5,
-    PROCESSOR_INVALID_CODE_SIZE    = 1 << 6,
-    PROCESSOR_PC_OUT_OF_CODE       = 1 << 7
+    PROCESSOR_NOT_INIT                 = 1 << 0,
+    PROCESSOR_NULL_CODE                = 1 << 1,
+    PROCESSOR_NEGATIVE_PROGRAM_COUNTER = 1 << 2,
+    PROCESSOR_REGISTERS_OVER           = 1 << 3,
+    CODE_FILE_NOT_OPENED               = 1 << 4,
+    PROCESSOR_ALLOC_FAILED             = 1 << 5,
+    PROCESSOR_INVALID_CODE_SIZE        = 1 << 6,
+    PROCESSOR_PC_OUT_OF_CODE           = 1 << 7
 };
 
 //----------------------------------------------------------------

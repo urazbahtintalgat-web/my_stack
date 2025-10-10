@@ -8,63 +8,7 @@
 
 #define COMMAND_MAX_LEN 5
 
-
-CalculateErr machine_calculate(struct Stack * stk, char * file_name, calculate_error_storage_type * err) {
-    size_t read = 0;
-    char * whole_machine_text = readfile(file_name, &read);
-    if (whole_machine_text == NULL) {
-        printf("Macine file was not opened\n");
-        return CALCULATE_WAS_ERROR;
-    }
-
-    int comand_amount = count_lines(whole_machine_text);
-    struct line * comands = make_line_massive(whole_machine_text, comand_amount);
-    if (comands == NULL) {
-        printf("memory was not allocated");
-        return CALCULATE_WAS_ERROR;
-    }
-    int flag = 0;
-    for (size_t i = 0; i < comand_amount; i++) {
-        int cmd = atoi(comands[i].begin);
-        switch (atoi(comands[i].begin))
-        {
-        case 0:
-            /* code */
-            break;
-        
-        case 2:
-            /* code */
-            break;
-        
-        case 3:
-            /* code */
-            break;
-        
-        case 4:
-            /* code */
-            break;
-        
-        case 5:
-            /* code */
-            break;
-        
-        case 6:
-            /* code */
-            break;
-        
-        default:
-        flag = 1;
-            break;
-        }
-        if (flag) {
-            printf("Invalid comand\n");
-            break;
-        }
-    }
-    return CALCULATE_NO_ERROR;
-}
-
-
+/*
 CalculateErr human_calculate(struct Stack * stk, calculate_error_storage_type * err) {
     while (1) {
         char command[COMMAND_MAX_LEN + 1] = "";
@@ -115,7 +59,7 @@ CalculateErr human_calculate(struct Stack * stk, calculate_error_storage_type * 
 
     }
 }
-
+*/
 CalculateErr pop_two_elements(struct Stack * stk, stack_type * x, stack_type * y, calculate_error_storage_type * err) {
     if (StackPop(stk, x, err)) {
         return CALCULATE_STACK_ERROR;
@@ -182,23 +126,4 @@ CalculateErr calculate_out(struct Stack * stk, calculate_error_storage_type * er
     }
     printf("%d\n", x);///зависит от stack_type
     return CALCULATE_NO_ERROR;
-}
-
-CalculateCommands choose_command(char * command) {
-    if (strcmp(command, "PUSH") == 0) {
-        return PUSH;
-    } else if (strcmp(command, "ADD") == 0) {
-        return ADD;
-    } else if (strcmp(command, "SUB") == 0) {
-        return SUB;
-    } else if (strcmp(command, "MUL") == 0) {
-        return MUL;
-    } else if (strcmp(command, "DIV") == 0) {
-        return DIV;
-    } else if (strcmp(command, "OUT") == 0) {
-        return OUT;
-    } else if (strcmp(command, "HLT") == 0) {
-        return HLT;
-    }
-    return HLT;
 }
