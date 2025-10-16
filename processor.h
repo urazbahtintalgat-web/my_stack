@@ -4,10 +4,24 @@
 #include "asembler.h"
 typedef unsigned int processor_error_storage_type;
 #define REGISTERS_AMOUNT 16
-
+#define ADRESSES_LENGTH 64
+#define RAM_MEMORY_AMOUNT 100
+/**
+ * @brief Структура для хранения процессора
+ * 
+ * @param data стек для хранения данный внутри процессора
+ * @param addresses стек для хранения адресов возврата в процессоре
+ * @param code массив с кодом который выполняет процессор
+ * @param ram массив оперативной памяти
+ * @param program_counter счетчик нынешней команды
+ * @param code_size размер кода
+ * @param registers массив с регистрами
+ */
 struct ProcessorStruct {
     Stack data;
+    Stack addresses;
     int * code;
+    int * ram;
     int program_counter;
     size_t code_size;
     int registers[REGISTERS_AMOUNT];

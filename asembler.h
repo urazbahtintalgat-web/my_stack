@@ -21,14 +21,17 @@ enum AssemblerComands {
     //17
     //18
     //19
-    //20
+    CF_INSTRS_START = 20,
     ASM_JMP  = 21,
     ASM_JB   = 22,
     ASM_JBE  = 23,
     ASM_JA   = 24,
     ASM_JAE  = 25,
     ASM_JE   = 26,
-    ASM_JNE  = 27
+    ASM_JNE  = 27,
+    ASM_CALL = 28,
+    ASM_RET  = 29,
+    CF_INSTRS_END = 30,
 };
 
 #define COMANDS_MAX_LENGTH 20
@@ -45,7 +48,7 @@ const char ComandNames[][COMANDS_MAX_LENGTH] = {
     "ASM_HLT" ,//9
     "",//10
     "ASM_PUSHR",//11
-    "ASM_POPR",//12
+    "ASM_POPR" ,//12
     "",//13
     "",//14
     "",//15
@@ -54,13 +57,15 @@ const char ComandNames[][COMANDS_MAX_LENGTH] = {
     "",//18
     "",//19
     "",//20
-    "ASM_JMP",//21
-    "ASM_JB ",//22
-    "ASM_JBE",//23
-    "ASM_JA ",//24
-    "ASM_JAE",//25
-    "ASM_JE ",//26
-    "ASM_JNE" //27
+    "ASM_JMP" ,//21
+    "ASM_JB"  ,//22
+    "ASM_JBE" ,//23
+    "ASM_JA"  ,//24
+    "ASM_JAE" ,//25
+    "ASM_JE"  ,//26
+    "ASM_JNE" ,//27
+    "ASM_CALL",//28
+    "ASM_RET"  //29
 };
 
 enum Registers {

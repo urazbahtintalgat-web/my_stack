@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+int RAM[RAM_MEMORY_AMOUNT] = {};
+
 ProcessorErr ProcessorVerify(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     ProcessorErr flag = PROCESSOR_NO_ERROR;
     if (processor == NULL) {
@@ -17,6 +19,11 @@ ProcessorErr ProcessorVerify(struct ProcessorStruct * processor, processor_error
 
     if (StackNotOK(&processor->data, NULL, __FILE__, __func__, __LINE__)) {
         printf("Stack verefication fail\n");
+        flag = PROCESSOR_WAS_ERROR;
+    }
+
+    if (StackNotOK(&processor->addresses, NULL, __FILE__, __func__, __LINE__)) {
+        printf("Addresses stack verification fail\n");
         flag = PROCESSOR_WAS_ERROR;
     }
 
@@ -44,17 +51,30 @@ ProcessorErr ProcessorVerify(struct ProcessorStruct * processor, processor_error
 }
 
 ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity, processor_error_storage_type * err) {
-    /*
-    asserts
-    */
+    if (processor == NULL) {
+        printf("Error: NULL processor pointer\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+    if (capacity <= 0) {
+        printf("Error: invalid capacity <= 0\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+    
     struct Stack data = {};
     stack_error_storage_type stackerr = 0;
     if (StackInit(&data, capacity, &stackerr)) {
-        printf("Was error with stack\n");
+        printf("Was error with data stack\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+    struct Stack addresses = {};
+    if (StackInit(&addresses, ADRESSES_LENGTH, &stackerr)) {
+        printf("Was error with addresses stack\n");
         return PROCESSOR_WAS_ERROR;
     }
     processor->data = data;
+    processor->addresses = addresses;
     processor->code = NULL;
+    processor->ram = RAM;
     processor->program_counter = 0;
     processor->code_size = 0;
     for (size_t i = 0; i < REGISTERS_AMOUNT; i++) {
@@ -113,6 +133,7 @@ void ProcessorDestroy(struct ProcessorStruct * processor) {
     }
 
     StackDestroy(&processor->data);
+    StackDestroy(&processor->addresses);
 
     if (processor->code != NULL) {
         free(processor->code);
@@ -121,6 +142,9 @@ void ProcessorDestroy(struct ProcessorStruct * processor) {
 
     processor->program_counter = 0;
 
+    for (int i = 0; i < RAM_MEMORY_AMOUNT; i++) {
+        processor->ram[i] = 0;
+    }
     for (int i = 0; i < REGISTERS_AMOUNT; i++) {
         processor->registers[i] = 0;
     }
@@ -144,7 +168,7 @@ ProcessorErr WholeProgram(struct ProcessorStruct * processor, processor_error_st
 
     while (processor->program_counter < processor->code_size) {
         if ((verefy_result = ProcessorVerify(processor, err))) {
-            printf("was error\n");
+            printf("was error with running program: %s:%d\n", __FILE__, __LINE__);
             return verefy_result;
         }
         int comand = *(processor->code + processor->program_counter++);

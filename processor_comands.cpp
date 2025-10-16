@@ -34,7 +34,9 @@ ProcessorComand comand_list[] = {
     DoJA ,  //24
     DoJAE,  //25
     DoJE ,  //26
-    DoJNE   //27
+    DoJNE,  //27
+    DoCALL, //28
+    DoRET   //29
 };
 
 
@@ -100,6 +102,11 @@ ProcessorErr DoMUL(struct ProcessorStruct * processor, processor_error_storage_t
 ProcessorErr DoDIV(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     int a = 0, b = 0;
     TWOPOP(processor, &a, &b)
+
+    if (a == 0) {
+        printf("Error: DIV zero(/0)\n");
+        return PROCESSOR_WAS_ERROR;
+    }
     if (StackPush(&processor->data, b / a, NULL)) {
         return PROCESSOR_WAS_ERROR;
     }
@@ -143,11 +150,15 @@ ProcessorErr DoPOPR(struct ProcessorStruct * processor, processor_error_storage_
     processor->registers[reg] = value;
     return PROCESSOR_NO_ERROR;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 ProcessorErr DoJMP(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     int index = processor->code[processor->program_counter++];
     processor->program_counter = index;
     return (index < processor->code_size) ? PROCESSOR_NO_ERROR : PROCESSOR_PC_OUT_OF_CODE;
 }
+
 ProcessorErr DoJB(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     int a = 0, b = 0;
     TWOPOP(processor, &a, &b)
@@ -158,6 +169,7 @@ ProcessorErr DoJB(struct ProcessorStruct * processor, processor_error_storage_ty
         return PROCESSOR_NO_ERROR;
     }
 }
+
 ProcessorErr DoJBE(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     int a = 0, b = 0;
     TWOPOP(processor, &a, &b)
@@ -207,6 +219,23 @@ ProcessorErr DoJNE(struct ProcessorStruct * processor, processor_error_storage_t
         processor->program_counter++;
         return PROCESSOR_NO_ERROR;
     }
+}
+ProcessorErr DoCALL(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int next_index = processor->code[processor->program_counter++];
+    int last_index = processor->program_counter;
+    if (StackPush(&processor->addresses, last_index, NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+    processor->program_counter = next_index;
+    return (next_index < processor->code_size) ? PROCESSOR_NO_ERROR : PROCESSOR_PC_OUT_OF_CODE;
+}
+ProcessorErr DoRET(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int last_index = 0;
+    if (StackPop(&processor->addresses, &last_index, NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+    processor->program_counter = last_index;
+    return (last_index < processor->code_size) ? PROCESSOR_NO_ERROR : PROCESSOR_PC_OUT_OF_CODE;
 }
 
 //int main() {

@@ -17,7 +17,7 @@ int check_calculate_comand(struct line * comands, size_t index, const char * com
 #define CHECK_CALCULATE_COMAND(comands, index, comand) check_calculate_comand(comands, index, comand, sizeof(comand) - 1)
 
 int fwrite_register(const char * now_register, FILE * machine_text) {
-    for (int reg = 0; reg < (sizeof(RegisterNames) / sizeof(RegisterNames[0])); reg++) {
+    for (int reg = 0; (unsigned long)reg < (sizeof(RegisterNames) / sizeof(RegisterNames[0])); reg++) {
         if (strncmp(now_register, RegisterNames[reg], 2) == 0) {
             printf("register %s", RegisterNames[reg]);////////////////////////////
             if (fwrite(&reg, sizeof(int), 1, machine_text) != 1) {
@@ -60,7 +60,7 @@ int main() {
 
 
     ///НАЧАЛО СКАНИРОВАНИЯ И ПЕРЕВОДА В КОД
-    int ip = 0;
+
     for (int dobule_run = 0; dobule_run < 2; dobule_run++) {
 
         int ip = 0;
@@ -138,11 +138,11 @@ int main() {
                         default:
                             break;
                     }
-                    if (ASM_JMP <= cmd && cmd <= ASM_JNE) {
+                    if (ASM_JMP <= cmd && cmd <= ASM_CALL) {
                         const char * label_start = comands[i].begin + now_comand_length;
 
                         while (*label_start == ' ' || *label_start == '\t')
-                        label_start++;
+                            label_start++;
                         
                         if (dobule_run == 1) {
                             if (*label_start == ':') {
