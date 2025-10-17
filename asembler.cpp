@@ -83,7 +83,7 @@ int main() {
             int now_comand_length = 0;
             while (now_comand_length < COMANDS_MAX_LENGTH && 
                    comands[i].begin[now_comand_length] != '\0' && 
-                   comands[i].begin[now_comand_length] != ' ' && 
+                   comands[i].begin[now_comand_length] != ' '  && 
                    comands[i].begin[now_comand_length] != '\t' && 
                    comands[i].begin[now_comand_length] != '\n') {
                 now_comand_length++;
@@ -96,155 +96,224 @@ int main() {
             int command_found = 0;
 
             for (int cmd = 0; cmd < (sizeof(ComandNames) / sizeof(ComandNames[0])); cmd++) {
-                if (ComandNames[cmd][0] == '\0') continue;
+                if (ComandNames[cmd][0] == '\0')
+                    continue;
+                if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) != 0 || now_comand_length != strlen(ComandNames[cmd]) - 4)
+                    continue;
 
-                if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) == 0 && now_comand_length == strlen(ComandNames[cmd]) - 4) {
-                    printf("(number %2d) comand %9s ", ip, ComandNames[cmd]);//////////////
-                    command_found = 1;
-                    if (dobule_run == 1 && fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
-                        printf("assembler fweite error %s:%d\n", __FILE__, __LINE__);
-                        return 1;
+                
+                //ЗАПИСЬ КОМАНТЫ В ТЕКСТОВИК ДЛЯ ПРОЦЕССОРА
+                printf("(number %2d) comand %9s ", ip, ComandNames[cmd]);//////////////
+                command_found = 1;
+                if (dobule_run == 1 && fwrite(&cmd, sizeof(int), 1, machine_text) != 1) {
+                    printf("assembler fweite error %s:%d\n", __FILE__, __LINE__);
+                    return 1;
+                }
+                ip++;
+                //КОНЕЦ ЗАПИСИ ДАЛЕЕ ИДУТ ПРОВЕРКИ НА АРГУМЕНТЫ
+
+
+                //----------------------
+                //ПРОВЕРКИ НА АРГУМЕНТЫ:
+                //----------------------
+                    
+                    
+                //ПРОВЕРКИ НА ПРЫЖКИ И ЗАПИСИ АЙПИШНИКОВ ПРИЖКОВ
+                if (ASM_JMP <= cmd && cmd <= ASM_CALL) {
+                    const char * label_start = comands[i].begin + now_comand_length;
+
+                    while (*label_start == ' ' || *label_start == '\t')
+                        label_start++;
+                    
+                    if (dobule_run == 1) {
+                        if (*label_start == ':') {
+                            int label = atoi(label_start + 1);
+                            fwrite(&labels[label], sizeof(int), 1, machine_text);
+                            printf("(number %2d) jump -> :%d", ip, labels[label]);
+                        } else {
+                            int jump_ip = atoi(label_start);
+                            fwrite(&jump_ip, sizeof(int), 1, machine_text);
+                            printf("(number %2d) jump -> ip%d", ip, jump_ip);
+                        }
                     }
                     ip++;
-                    switch (cmd) {
-                        case ASM_PUSH: {
-                            int value = atoi(comands[i].begin + now_comand_length);
-                            printf("(number %2d) %d",ip , value);////////////////////////
-                            if (dobule_run == 1 && fwrite(&value, sizeof(int), 1, machine_text) != 1) {
-                                printf("assembler fwrite error with push value %s:%d\n", __FILE__, __LINE__);
-                                return 1;
-                            }
-                            ip++;
-                            break;
-                        }
-                        case ASM_PUSHR: {
-                            printf("(number %2d) ", ip);
-                            if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
-                                printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
-                                return 1;
-                            }
-                            ip++;
-                            break;
-                        }
-                        case ASM_POPR: {
-                            printf("(number %2d) ", ip);
-                            if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
-                                printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
-                                return 1;
-                            }
-                            ip++;
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                    if (ASM_JMP <= cmd && cmd <= ASM_CALL) {
-                        const char * label_start = comands[i].begin + now_comand_length;
+                }
+                //КОНЕЦ ПРОВЕРКИ НА ПРЫЖКИ
 
-                        while (*label_start == ' ' || *label_start == '\t')
-                            label_start++;
-                        
-                        if (dobule_run == 1) {
-                            if (*label_start == ':') {
-                                int label = atoi(label_start + 1);
-                                fwrite(&labels[label], sizeof(int), 1, machine_text);
-                                printf("(number %2d) jump -> :%d", ip, labels[label]);
-                            } else {
-                                int jump_ip = atoi(label_start);
-                                fwrite(&jump_ip, sizeof(int), 1, machine_text);
-                                printf("(number %2d) jump -> ip%d", ip, jump_ip);
-                            }
+
+                //НАЧАЛО ПРОВЕРКИ НА РАБОТУ С АРГУМЕНТАМИ ВНУТРИ ПРОЦЕССОРА
+
+                switch (cmd) {
+                    case ASM_PUSH: {
+                        int value = atoi(comands[i].begin + now_comand_length);
+                        printf("(number %2d) %d",ip , value);////////////////////////
+                        if (dobule_run == 1 && fwrite(&value, sizeof(int), 1, machine_text) != 1) {
+                            printf("assembler fwrite error with push value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
                         }
                         ip++;
+                        break;
                     }
-                    printf("\n");////////////////
+                    case ASM_PUSHR: {
+                        printf("(number %2d) ", ip);
+                        if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+                    case ASM_POPR: {
+                        printf("(number %2d) ", ip);
+                        if (dobule_run == 1 && !fwrite_register(comands[i].begin + now_comand_length + 1, machine_text)) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+                    default:
+                        break;
                 }
+
+                //КОНЕЦ  ПРОВЕРКИ НА РАБОТУ С АРГУМЕНТАМИ ВНУТРИ ПРОЦЕССОРА
+
+
+                //НАЧАЛО ПРОВЕРКИ НА РАБОТУ С ОПЕРАТИВНОЙ ПАМЯТЬЮ
+                
+                switch (cmd)
+                {
+                case ASM_PUSHM: {
+                    printf("(number %2d) ", ip);
+                    const char * index_start = comands[i].begin + now_comand_length;
+
+                    while (*index_start == ' ' || *index_start == '\n')
+                        index_start++;
+                    if (*index_start++ != '[') {
+                        printf("ERROR: comand PUSHM/POPM continue without [\n");
+                        printf("ERROR: %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                    }
+
+                    int was_register = 0;
+                    if (isalpha(*index_start))
+                        was_register = 1;
+                    //ЗАПИСЫВАЕМ БУДЕТ ЛИ ДАЛЕЕ РЕГИСТР ИЛИ ПРОСТО ИНДЕКС
+                    printf("was register = %d ", was_register);
+                    if (dobule_run == 1 && !fwrite(&was_register, sizeof(int), 1, machine_text)) {
+                        printf("ERROR: assembler fwrite error with registr flag %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                    }
+
+                    ip++;
+                    //ЗАПИСАЛИ   БУДЕТ ЛИ ДАЛЕЕ РЕГИСТР ИЛИ ПРОСТО ИНДЕКС
+
+                    switch (was_register)
+                    {
+                    case 1: {
+                        printf("(number %2d) ", ip);
+                        if (dobule_run == 1 && !fwrite_register(index_start, machine_text)) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+                    
+                    case 0: {
+                        printf("(number %2d) ", ip);
+                        int value = atoi(index_start);
+                        printf("%d", value);
+                        if (dobule_run == 1 && fwrite(&value, sizeof(int), 1, machine_text) != 1) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+
+                    default: {
+                        printf("ERROR: unknown thing in pushm %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                        break;
+                    }
+                    }
+                    break;
+                }
+
+                case ASM_POPM: {
+                    printf("(number %2d) ", ip);
+                    const char * index_start = comands[i].begin + now_comand_length;
+
+                    while (*index_start == ' ' || *index_start == '\n')
+                        index_start++;
+                    if (*index_start++ != '[') {
+                        printf("ERROR: comand PUSHM/POPM continue without [\n");
+                        printf("ERROR: %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                    }
+
+                    int was_register = 0;
+                    if (isalpha(*index_start))
+                        was_register = 1;
+
+                    //ЗАПИСЫВАЕМ БУДЕТ ЛИ ДАЛЕЕ РЕГИСТР ИЛИ ПРОСТО ИНДЕКС
+                    printf("was register = %d ", was_register);
+                    if (dobule_run == 1 && !fwrite(&was_register, sizeof(int), 1, machine_text)) {
+                        printf("ERROR: assembler fwrite error with registr flag %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                    }
+
+                    ip++;
+                    //ЗАПИСАЛИ   БУДЕТ ЛИ ДАЛЕЕ РЕГИСТР ИЛИ ПРОСТО ИНДЕКС
+
+                    switch (was_register)
+                    {
+                    case 1: {
+                        printf("(number %2d) ", ip);
+                        if (dobule_run == 1 && !fwrite_register(index_start, machine_text)) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+                    
+                    case 0: {
+                        printf("(number %2d) ", ip);
+                        int value = atoi(index_start);
+                        printf("%d", value);
+                        if (dobule_run == 1 && fwrite(&value, sizeof(int), 1, machine_text) != 1) {
+                            printf("assembler fwrite error with pushr value %s:%d\n", __FILE__, __LINE__);
+                            return 1;
+                        }
+                        ip++;
+                        break;
+                    }
+
+                    default: {
+                        printf("ERROR: unknown thing in pushm %s:%d\n", __FILE__, __LINE__);
+                        return 1;
+                        break;
+                    }
+                    }
+                    break;
+                }
+                
+                default:
+                    break;
+                }
+                //КОНЕЦ  ПРОВЕРКИ НА РАБОТУ С ОПЕРАТИСНОЙ ПОМЯТЬЮ
+
+
+                printf("\n");////////////////
             }
+            
             if (command_found == 0) {
                 printf("not found comand\n");
                 return 1;
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*
-        if (CHECK_CALCULATE_COMAND(comands, i, "PUSH")) {
-            int x = atoi(comands[i].begin + sizeof("PUSH") - 1);
-            unsigned char cmd = PUSH;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1 || fwrite(&x, sizeof(x), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "ADD")) {
-            unsigned char cmd = ADD;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "SUB")) {
-            unsigned char cmd = SUB;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "MUL")) {
-            unsigned char cmd = MUL;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "DIV")) {
-            unsigned char cmd = DIV;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "OUT")) {
-            unsigned char cmd = OUT;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        if (CHECK_CALCULATE_COMAND(comands, i, "HLT")) {
-            unsigned char cmd = HLT;
-            if (fwrite(&cmd, sizeof(cmd), 1, machine_text) != 1) {
-                printf("invalid comand %d\n", (int)i + 1);
-                break;
-            }
-            continue;
-        }
-        */
     }
 
     fclose(machine_text);

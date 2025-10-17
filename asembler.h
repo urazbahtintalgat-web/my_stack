@@ -1,6 +1,13 @@
 #ifndef ASEMBLER_H
 #define ASEMBLER_H
 
+/**
+ * @brief Енам для хранения кодов команд для асемблера
+ *        идейно 1-10 обычные команды
+ *              11-20 связаные с регисторами
+ *              21-40 связаные с метками и прыжками
+ *              41-60 связаные с оперативной памятью
+ */
 enum AssemblerComands {
     ASM_PUSH = 1,
     ASM_POP  = 2,
@@ -21,17 +28,29 @@ enum AssemblerComands {
     //17
     //18
     //19
-    CF_INSTRS_START = 20,
-    ASM_JMP  = 21,
-    ASM_JB   = 22,
-    ASM_JBE  = 23,
-    ASM_JA   = 24,
-    ASM_JAE  = 25,
-    ASM_JE   = 26,
-    ASM_JNE  = 27,
-    ASM_CALL = 28,
-    ASM_RET  = 29,
-    CF_INSTRS_END = 30,
+    //20
+    CF_INSTRS_START = 21,
+    ASM_JMP  = 22,
+    ASM_JB   = 23,
+    ASM_JBE  = 24,
+    ASM_JA   = 25,
+    ASM_JAE  = 26,
+    ASM_JE   = 27,
+    ASM_JNE  = 28,
+    ASM_CALL = 29,
+    ASM_RET  = 30,
+    CF_INSTRS_END = 31,
+    //32
+    //33
+    //34
+    //35
+    //36
+    //37
+    //38
+    //39
+    //40
+    ASM_PUSHM = 41,
+    ASM_POPM  = 42
 };
 
 #define COMANDS_MAX_LENGTH 20
@@ -57,15 +76,28 @@ const char ComandNames[][COMANDS_MAX_LENGTH] = {
     "",//18
     "",//19
     "",//20
-    "ASM_JMP" ,//21
-    "ASM_JB"  ,//22
-    "ASM_JBE" ,//23
-    "ASM_JA"  ,//24
-    "ASM_JAE" ,//25
-    "ASM_JE"  ,//26
-    "ASM_JNE" ,//27
-    "ASM_CALL",//28
-    "ASM_RET"  //29
+    "",//21
+    "ASM_JMP" ,//22
+    "ASM_JB"  ,//23
+    "ASM_JBE" ,//24
+    "ASM_JA"  ,//25
+    "ASM_JAE" ,//26
+    "ASM_JE"  ,//27
+    "ASM_JNE" ,//28
+    "ASM_CALL",//29
+    "ASM_RET" ,//30
+    "",//31
+    "",//32
+    "",//33
+    "",//34
+    "",//35
+    "",//36
+    "",//37
+    "",//38
+    "",//39
+    "",//40
+    "ASM_PUSHM",//41
+    "ASM_POPM"  //42
 };
 
 enum Registers {
@@ -105,5 +137,17 @@ const char RegisterNames[][3] = {
     "RO",  // 14
     "RP"   // 15
 };
+/*
+struct asm_comand {
+    int number;
+    char name[COMANDS_MAX_LENGTH];
+    int args;
+};
+
+asm_comand AsmComands[] = {
+    {0, "", 0},
+    {ASM_PUSH, "ASM_PUSH", }
+};
+*/
 
 #endif //ASEMBLER_H
