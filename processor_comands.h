@@ -27,6 +27,7 @@ ProcessorErr DoCALL (struct ProcessorStruct * processor, processor_error_storage
 ProcessorErr DoRET  (struct ProcessorStruct * processor, processor_error_storage_type * err);
 ProcessorErr DoPUSHM(struct ProcessorStruct * processor, processor_error_storage_type * err);
 ProcessorErr DoPOPM (struct ProcessorStruct * processor, processor_error_storage_type * err);
+ProcessorErr DoDROW (struct ProcessorStruct * processor, processor_error_storage_type * err);
 
 //------------------------------------------
 int OnePop(struct ProcessorStruct * processor, int * a, processor_error_storage_type * err = NULL);

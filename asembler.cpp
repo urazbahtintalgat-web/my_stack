@@ -263,6 +263,7 @@ int running_assembler(AssemblerStruct * assembler) {
             //ПРОПУСТИТЬ ЕСЛИ ЭТО ПУСТАЯ КОМАНДА
             if (Assembler_Comands_massiv[cmd].name[0] == '\0') continue;
             //ПРОПУСТИТЬ ЕСЛИ КОМАНДА НЕ СОВПАЛА
+            //printf("%d ", cmd);
             if (strncmp(assembler->comands[i].begin, Assembler_Comands_massiv[cmd].name + 4, now_comand_length) != 0 
                 || now_comand_length != strlen(Assembler_Comands_massiv[cmd].name) - 4) continue;
 

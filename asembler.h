@@ -55,7 +55,16 @@ enum AssemblerComandsEnum {
     //39
     //40
     ASM_PUSHM = 41,
-    ASM_POPM  = 42
+    ASM_POPM  = 42,
+    //43
+    //44
+    //45
+    //46
+    //47
+    //48
+    //49
+    //50
+    ASM_DROW = 51
 };
 
 
@@ -66,6 +75,13 @@ struct AssemblerComand {
     int opcode;
 };
 
+/**
+ * @brief Это массив структур для удобного доступа к командам где
+ *        Assembler_Comands_massiv[i][0] - строка имя команды
+ *        Assembler_Comands_massiv[i][1] - енам для команды
+ *        Assembler_Comands_massiv[i][2] - количество аргументов после команды
+ *        Assembler_Comands_massiv[i][3] - порядковы номер команды
+ */
 const struct AssemblerComand Assembler_Comands_massiv[] = {
     {"", 0, 0, 0},                           // 0
     {"ASM_PUSH", ASM_PUSH, 1, 1},            // 1
@@ -109,7 +125,16 @@ const struct AssemblerComand Assembler_Comands_massiv[] = {
     {"", 0, 0, 0},                           // 39
     {"", 0, 0, 0},                           // 40
     {"ASM_PUSHM", ASM_PUSHM, 2, 41},         // 41
-    {"ASM_POPM" , ASM_POPM , 2, 42}          // 42
+    {"ASM_POPM" , ASM_POPM , 2, 42},         // 42
+    {"", 0, 0, 0},                           // 43
+    {"", 0, 0, 0},                           // 44
+    {"", 0, 0, 0},                           // 45
+    {"", 0, 0, 0},                           // 46
+    {"", 0, 0, 0},                           // 47
+    {"", 0, 0, 0},                           // 48
+    {"", 0, 0, 0},                           // 49
+    {"", 0, 0, 0},                           // 50
+    {"ASM_DROW", ASM_DROW, 0, 51}            // 51
 };
 #define COMMANDS_AMOUNT (sizeof(Assembler_Comands_massiv) / sizeof(Assembler_Comands_massiv[0]))
 

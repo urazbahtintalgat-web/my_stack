@@ -7,6 +7,8 @@
 #include <stdio.h>
 
 extern int RAM[];
+int RAMX = 10;
+int RAMY = 10;
 
 ProcessorComand comand_list[] = {
     NULL,   //0
@@ -51,7 +53,16 @@ ProcessorComand comand_list[] = {
     NULL,   //39
     NULL,   //40
     DoPUSHM,//41
-    DoPOPM  //42
+    DoPOPM, //42
+    NULL,   //43
+    NULL,   //44
+    NULL,   //45
+    NULL,   //46
+    NULL,   //47
+    NULL,   //48
+    NULL,   //49
+    NULL,   //50
+    DoDROW, //51
 };
 
 
@@ -290,7 +301,7 @@ ProcessorErr DoPOPM(struct ProcessorStruct * processor, processor_error_storage_
         index = processor->registers[reg];
         break;
     }
-    
+
     case 0:
         index = processor->code[processor->program_counter++];
         break;
@@ -302,6 +313,16 @@ ProcessorErr DoPOPM(struct ProcessorStruct * processor, processor_error_storage_
     }
     if (StackPop(&processor->data, RAM + index, NULL)) {
         return PROCESSOR_WAS_ERROR;
+    }
+    return PROCESSOR_NO_ERROR;
+}
+
+ProcessorErr DoDROW(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    for (int y = 0; y < RAMY; y++) {
+        for (int x = 0; x < RAMX; x++) {
+            printf("%3d ", RAM[y * RAMX + x]);
+        }
+        printf("\n");
     }
     return PROCESSOR_NO_ERROR;
 }
