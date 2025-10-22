@@ -25,9 +25,13 @@ ProcessorErr DoJE   (struct ProcessorStruct * processor, processor_error_storage
 ProcessorErr DoJNE  (struct ProcessorStruct * processor, processor_error_storage_type * err);
 ProcessorErr DoCALL (struct ProcessorStruct * processor, processor_error_storage_type * err);
 ProcessorErr DoRET  (struct ProcessorStruct * processor, processor_error_storage_type * err);
+ProcessorErr DoPUSHM(struct ProcessorStruct * processor, processor_error_storage_type * err);
+ProcessorErr DoPOPM (struct ProcessorStruct * processor, processor_error_storage_type * err);
 
+//------------------------------------------
 int OnePop(struct ProcessorStruct * processor, int * a, processor_error_storage_type * err = NULL);
 int TwoPop(struct ProcessorStruct * processor, int * a, int * b, processor_error_storage_type * err = NULL);
+
 //------------------------------------------
 
 // ProcessorComand GetCommand(command_id)

@@ -22,7 +22,7 @@ struct ProcessorStruct {
     Stack addresses;
     int * code;
     int * ram;
-    int program_counter;
+    size_t program_counter;
     size_t code_size;
     int registers[REGISTERS_AMOUNT];
 };

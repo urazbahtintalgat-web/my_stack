@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdio.h>
 
+extern int RAM[];
+
 ProcessorComand comand_list[] = {
     NULL,   //0
     DoPUSH, //1
@@ -28,15 +30,28 @@ ProcessorComand comand_list[] = {
     NULL,   //18
     NULL,   //19
     NULL,   //20
-    DoJMP,  //21
-    DoJB ,  //22
-    DoJBE,  //23
-    DoJA ,  //24
-    DoJAE,  //25
-    DoJE ,  //26
-    DoJNE,  //27
-    DoCALL, //28
-    DoRET   //29
+    NULL,   //21
+    DoJMP,  //22
+    DoJB ,  //23
+    DoJBE,  //24
+    DoJA ,  //25
+    DoJAE,  //26
+    DoJE ,  //27
+    DoJNE,  //28
+    DoCALL, //29
+    DoRET,  //30
+    NULL,   //31
+    NULL,   //32
+    NULL,   //33
+    NULL,   //34
+    NULL,   //35
+    NULL,   //36
+    NULL,   //37
+    NULL,   //38
+    NULL,   //39
+    NULL,   //40
+    DoPUSHM,//41
+    DoPOPM  //42
 };
 
 
@@ -131,6 +146,7 @@ ProcessorErr DoOUT(struct ProcessorStruct * processor, processor_error_storage_t
     return PROCESSOR_NO_ERROR;
 }
 ProcessorErr DoHLT(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    
     printf("HLT program end\n");
     return PROCESSOR_NO_ERROR;
 }
@@ -237,6 +253,63 @@ ProcessorErr DoRET(struct ProcessorStruct * processor, processor_error_storage_t
     processor->program_counter = last_index;
     return (last_index < processor->code_size) ? PROCESSOR_NO_ERROR : PROCESSOR_PC_OUT_OF_CODE;
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+ProcessorErr DoPUSHM(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int was_register = processor->code[processor->program_counter++];
+    int index = 0;
+    switch (was_register)
+    {
+    case 1: {
+        int reg = processor->code[processor->program_counter++];
+        index = processor->registers[reg];
+        break;
+    }
+    
+    case 0:
+        index = processor->code[processor->program_counter++];
+        break;
+    
+    default:
+        printf("ERROR: was_register value = %d %s:%d\n", was_register, __FILE__, __LINE__);
+        return PROCESSOR_WAS_ERROR;
+        break;
+    }
+    if (StackPush(&processor->data, RAM[index], NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+    return PROCESSOR_NO_ERROR;
+}
+ProcessorErr DoPOPM(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int was_register = processor->code[processor->program_counter++];
+    int index = 0;
+    switch (was_register)
+    {
+    case 1: {
+        int reg = processor->code[processor->program_counter++];
+        index = processor->registers[reg];
+        break;
+    }
+    
+    case 0:
+        index = processor->code[processor->program_counter++];
+        break;
+    
+    default:
+        printf("ERROR: was_register value = %d %s:%d\n", was_register, __FILE__, __LINE__);
+        return PROCESSOR_WAS_ERROR;
+        break;
+    }
+    if (StackPop(&processor->data, RAM + index, NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+    return PROCESSOR_NO_ERROR;
+}
+
+
+
+
+
 
 //int main() {
 //    return 0;

@@ -93,7 +93,7 @@ long int get_int_code_size(const char* file_name) {
     
     // ssize_t
 
-    return (text_stat.st_size / 4);
+    return (text_stat.st_size / sizeof(int));
 }
 
 ProcessorErr ReadCode(struct ProcessorStruct * processor, const char * file_name, processor_error_storage_type * err) {
@@ -104,9 +104,9 @@ ProcessorErr ReadCode(struct ProcessorStruct * processor, const char * file_name
         return CODE_FILE_NOT_OPENED;
     }
 
-    //потом сделаю не константное
-    
-    processor->code = (int *) calloc(1000, sizeof(int));
+    processor->code_size = get_int_code_size(file_name);
+
+    processor->code = (int *) calloc(processor->code_size, sizeof(int));
     if (processor->code == NULL) {
         printf("processor allocated error\n");
         if (err) *err |= PROCESSOR_ALLOC_FAILED;
@@ -114,13 +114,12 @@ ProcessorErr ReadCode(struct ProcessorStruct * processor, const char * file_name
         return PROCESSOR_ALLOC_FAILED;
     }
 
-    size_t bytes_read = fread(processor->code, sizeof(int), 1000, code_file);
+    size_t bytes_read = fread(processor->code, sizeof(int), processor->code_size, code_file);
     fclose(code_file);
 
     /*потом когда сделаю версию покурче не с константным значением памяти тут будет if bytes_read != file_size assert*/
 
     processor->program_counter = 0;
-    processor->code_size = get_int_code_size(file_name);
 
     printf("success read, %zu\n", bytes_read);
     return PROCESSOR_NO_ERROR;
@@ -164,92 +163,32 @@ ProcessorErr WholeProgram(struct ProcessorStruct * processor, processor_error_st
         return verefy_result;
     }
 
-    int * end = processor->code + processor->code_size;
-
     while (processor->program_counter < processor->code_size) {
         if ((verefy_result = ProcessorVerify(processor, err))) {
             printf("was error with running program: %s:%d\n", __FILE__, __LINE__);
             return verefy_result;
         }
+        
         int comand = *(processor->code + processor->program_counter++);
-
+        
         ProcessorErr (*NowComand)(struct ProcessorStruct*, processor_error_storage_type*);
         NowComand = comand_list[comand];
-        NowComand(processor, err);
+        
+        if (NowComand == NULL) {
+            printf("ERROR: NULL command for code %d\n", comand);
+            return PROCESSOR_WAS_ERROR;
+        }
+        
+        if (NowComand(processor, err)) {
+            printf("error in %s:%d", __FILE__, __LINE__);
+            return PROCESSOR_WAS_ERROR;
+        }
         if (comand == ASM_HLT) {
             return PROCESSOR_NO_ERROR;
         }
-
-        /*
-        switch (comand) {
-            case PUSH: {
-                if (processor->program_counter + sizeof(stack_type) > end) {
-                    printf("Error try to PUSH after end of file\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                int value = ReadIntFromCode(&processor->program_counter);
-                if ((calculate_push(&processor->data, value, NULL))) {
-                    printf("calculate push error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("push %d\n", value);
-                break;
-            }
-
-            case ADD:
-                if ((calculate_add(&processor->data))) {
-                    printf("calculate add error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("add\n");
-                break;
-            
-            case SUB:
-                if ((calculate_sub(&processor->data))) {
-                    printf("calculate sub error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("sub\n");
-                break;
-            
-            case MUL:
-                if ((calculate_mul(&processor->data))) {
-                    printf("calculate mul error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("mul\n");
-                break;
-
-            case DIV:
-                if ((calculate_div(&processor->data))) {
-                    printf("calculate div error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("div\n");
-                break;
-            
-            case OUT:
-                if ((calculate_out(&processor->data))) {
-                    printf("calculate out error\n");
-                    return PROCESSOR_WAS_ERROR;
-                }
-                printf("out\n");
-                break;
-
-            case HLT:
-                printf("hlt program end\n");
-                return PROCESSOR_NO_ERROR;
-            
-            default:
-                printf("unknown comand %d\n", comand);
-                return PROCESSOR_WAS_ERROR;
-        }
-        */
-
     }
     return ProcessorVerify(processor, err);
 }
-
 
 
 
