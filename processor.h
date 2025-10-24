@@ -9,19 +9,30 @@ typedef unsigned int processor_error_storage_type;
 /**
  * @brief Структура для хранения процессора
  * 
- * @param data стек для хранения данный внутри процессора
- * @param addresses стек для хранения адресов возврата в процессоре
- * @param code массив с кодом который выполняет процессор
- * @param ram массив оперативной памяти
+ * @param data            стек для хранения данный внутри процессора
+ * @param addresses       стек для хранения адресов возврата в процессоре
+ * @param code            массив с кодом который выполняет процессор
+ * @param ram_count       размер оперативной памяти
+ * @param ram             массив оперативной памяти
+ * @param x               размер видео памяти по x
+ * @param y               размер видео памяти по y
+ * @param vram            массив видео памяти
  * @param program_counter счетчик нынешней команды
- * @param code_size размер кода
- * @param registers массив с регистрами
+ * @param code_size       размер кода
+ * @param registers       массив с регистрами
  */
 struct ProcessorStruct {
     Stack data;
     Stack addresses;
     int * code;
+
+    size_t ram_count;
     int * ram;
+
+    size_t x;
+    size_t y;
+    char * vram;
+
     size_t program_counter;
     size_t code_size;
     int registers[REGISTERS_AMOUNT];
@@ -43,7 +54,7 @@ enum ProcessorErr {
 
 //----------------------------------------------------------------
 
-ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity = 100, processor_error_storage_type * err = NULL);
+ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity, size_t ram_count, size_t x, size_t y, processor_error_storage_type * err);
 
 //----------------------------------------------------------------
 

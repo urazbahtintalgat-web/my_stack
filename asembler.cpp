@@ -12,7 +12,7 @@ void assembler_init(AssemblerStruct * assembler, FILE * machine_text, line * com
     assert(assembler);
     assert(comands);
 
-    assembler->machine_text = machine_text;
+    assembler->machine_text = machine_text;//--------------
     assembler->comands = comands;
     assembler->comands_amount = comands_amount;
     //assembler->labels
@@ -21,7 +21,7 @@ void assembler_init(AssemblerStruct * assembler, FILE * machine_text, line * com
     assembler->machine_code = (int *) calloc(comands_amount * 5, sizeof(int));
     
     assert(assembler->machine_code);
-    
+
     assembler->machine_index = 0;
     assembler->double_run = 0;
 }
@@ -74,8 +74,8 @@ int check_calculate_comand(struct line * comands, size_t index, const char * com
 #define CHECK_CALCULATE_COMAND(comands, index, comand) check_calculate_comand(comands, index, comand, sizeof(comand) - 1)
 
 int fwrite_register(AssemblerStruct * assembler, const char * now_register) {
-    for (int reg = 0; (unsigned long)reg < (sizeof(RegisterNames) / sizeof(RegisterNames[0])); reg++) {
-        if (strncmp(now_register, RegisterNames[reg], 2) == 0) {
+    for (int reg = 0; (unsigned long)reg < (sizeof(RegisterNames) / sizeof(RegisterNames[0])); reg++) {//------------
+        if (strncmp(now_register, RegisterNames[reg], 2) == 0) {//-------------
             printf("register %s", RegisterNames[reg]);////////////////////////////
             assembler->machine_code[assembler->machine_index++] = reg;
             return 0;
@@ -144,7 +144,7 @@ int check_jumps(AssemblerStruct * assembler, size_t i, int cmd, int now_comand_l
 }
 
 int check_arguments(AssemblerStruct * assembler, size_t i, int cmd, int now_comand_length) {
-    if (cmd == ASM_PUSH) {
+    if (cmd == ASM_PUSH ||cmd == ASM_CIRCLE) {
 
         int value = atoi(assembler->comands[i].begin + now_comand_length);
         printf("(number %2d) %d", assembler->ip , value);
@@ -182,7 +182,7 @@ int check_arguments(AssemblerStruct * assembler, size_t i, int cmd, int now_coma
             printf("ERROR: %s:%d\n", __FILE__, __LINE__);
             return 1;
         }
-
+        
         int was_register = 0;
         if (isalpha(*index_start))
             was_register = 1;
@@ -205,7 +205,6 @@ int check_arguments(AssemblerStruct * assembler, size_t i, int cmd, int now_coma
                 }
                 assembler->ip += 1;
                 return 0;
-                break;
             }
 
             case 0: {
@@ -217,15 +216,49 @@ int check_arguments(AssemblerStruct * assembler, size_t i, int cmd, int now_coma
                 }
                 assembler->ip += 1;
                 return 0;
-                break;
             }
 
             default:
                 printf("ERROR: unknown error with pushm/popm %s:%d\n", __FILE__, __LINE__);
                 return 1;
-                break;
+        }
+    }
+
+    if (cmd == ASM_PUSHV || cmd == ASM_POPV) {
+
+        const char * index_start = assembler->comands[i].begin + now_comand_length;
+
+        while (*index_start == ' ' || *index_start == '\n')
+            index_start++;
+        if (*index_start++ != '[') {
+            printf("ERROR: comand PUSHV/POPV continue without [\n");
+            printf("ERROR: %s:%d\n", __FILE__, __LINE__);
+            return 1;
+        }
+        int y = atoi(index_start);
+        while (isdigit(*index_start)) index_start++;
+        if (*index_start != ']' || *(index_start + 1) != '[') {
+            printf("ERROR: comand PUSHV/POPV continue without ][\n");
+            printf("ERROR: %s:%d\n", __FILE__, __LINE__);
+            return 1;
         }
 
+        index_start += 2;
+
+        int x = atoi(index_start);
+
+        if (assembler->double_run == 1) {
+            assembler->machine_code[assembler->machine_index++] = x;
+            assembler->machine_code[assembler->machine_index++] = y;
+        }
+
+        printf("(number %2d) ", assembler->ip);
+        printf("x=%d ", x);
+        assembler->ip += 1;
+        printf("(number %2d) ", assembler->ip);
+        printf("y=%d ", y);
+        assembler->ip += 1;
+        return 0;
     }
 
     return 0;
@@ -247,6 +280,7 @@ int running_assembler(AssemblerStruct * assembler) {
         //КОНЕЦ ПРОВЕРКИ НА МЕТКУ
 
         int now_comand_length = 0;
+        // isspace isblank --------------
         while (now_comand_length < COMANDS_MAX_LENGTH && 
                assembler->comands[i].begin[now_comand_length] != '\0' && 
                assembler->comands[i].begin[now_comand_length] != ' '  && 
@@ -316,7 +350,7 @@ int main() {
     int labels[LABEL_AMOUNT] = {0};
     AssemblerStruct assembler = {};
     AssemblerStruct * assembler_ptr = &assembler;
-    char human_file[] = "human_cmd.txt";
+    char human_file[] = "human_cmd3.txt";
     char machine_file[] = "macine_cmd.txt";
     if (run_preparing(&assembler, human_file, machine_file)) return 1;
 
@@ -440,7 +474,9 @@ int main() {
 
     make_machine_file(&assembler);
 
+    fclose(assembler.machine_text);
     //fclose(machine_text);
+
     //free(whole_human_text);
     //free(comands);
 

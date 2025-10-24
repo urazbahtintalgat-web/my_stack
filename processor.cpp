@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-int RAM[RAM_MEMORY_AMOUNT] = {};
+int RAM[RAM_MEMORY_AMOUNT] = {0};
 
 ProcessorErr ProcessorVerify(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     ProcessorErr flag = PROCESSOR_NO_ERROR;
@@ -50,7 +50,7 @@ ProcessorErr ProcessorVerify(struct ProcessorStruct * processor, processor_error
     return flag;
 }
 
-ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity, processor_error_storage_type * err) {
+ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity, size_t ram_count, size_t x, size_t y, processor_error_storage_type * err) {
     if (processor == NULL) {
         printf("Error: NULL processor pointer\n");
         return PROCESSOR_WAS_ERROR;
@@ -74,7 +74,20 @@ ProcessorErr ProcessorInit(struct ProcessorStruct * processor, size_t capacity, 
     processor->data = data;
     processor->addresses = addresses;
     processor->code = NULL;
-    processor->ram = RAM;
+    processor->ram_count = ram_count;
+    processor->ram = (int *) calloc(processor->ram_count, sizeof(int));
+    if (processor->ram == NULL) {
+        printf("Was error with calloc ram\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+    processor->x = x;
+    processor->y = y;
+    processor->vram = (char *) calloc(x * y, sizeof(int));
+    if (processor->vram == NULL) {
+        printf("Was error with colloc vram\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+
     processor->program_counter = 0;
     processor->code_size = 0;
     for (size_t i = 0; i < REGISTERS_AMOUNT; i++) {
@@ -133,17 +146,27 @@ void ProcessorDestroy(struct ProcessorStruct * processor) {
 
     StackDestroy(&processor->data);
     StackDestroy(&processor->addresses);
-
+    
     if (processor->code != NULL) {
         free(processor->code);
         processor->code = NULL;
     }
-
+    
+    processor->ram_count = 0;
+    if (processor->ram != NULL) {
+        free(processor->ram);
+        processor->ram = NULL;
+    }
+    
+    processor->x = 0;   
+    processor->y = 0;
+    if (processor->vram != NULL) {
+        free(processor->vram);
+        processor->vram = NULL;
+    }
+    
     processor->program_counter = 0;
 
-    for (int i = 0; i < RAM_MEMORY_AMOUNT; i++) {
-        processor->ram[i] = 0;
-    }
     for (int i = 0; i < REGISTERS_AMOUNT; i++) {
         processor->registers[i] = 0;
     }
@@ -156,7 +179,7 @@ int ReadIntFromCode(unsigned char ** program_counter) {
     return value;
 }
 
-ProcessorErr WholeProgram(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+ProcessorErr RunProgram(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     ProcessorErr verefy_result = PROCESSOR_NO_ERROR;
     if ((verefy_result = ProcessorVerify(processor, err))) {
         printf("was error\n");
@@ -199,7 +222,7 @@ int main() {
     struct ProcessorStruct processor;
     const char file_name[] = "macine_cmd.txt";
 
-    if ((ProcessorInit(&processor, 1000, &err))) {
+    if ((ProcessorInit(&processor, 1000, 100, 20, 20, &err))) {
         printf("processor init error\n");
         return 1;
     }
@@ -209,8 +232,8 @@ int main() {
         return 1;
     }
 
-    if ((WholeProgram(&processor, &err))) {
-        printf("whole program error\n");
+    if ((RunProgram(&processor, &err))) {
+        printf("run program error\n");
         return 1;
     }
 

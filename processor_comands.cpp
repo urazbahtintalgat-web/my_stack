@@ -21,7 +21,7 @@ ProcessorComand comand_list[] = {
     DoSQRT, //7
     DoOUT,  //8
     DoHLT,  //9
-    NULL,   //10
+    DoIn,   //10
     DoPUSHR,//11
     DoPOPR, //12
     NULL,   //13
@@ -63,6 +63,27 @@ ProcessorComand comand_list[] = {
     NULL,   //49
     NULL,   //50
     DoDROW, //51
+    NULL,   //52
+    NULL,   //53
+    NULL,   //54
+    NULL,   //55
+    NULL,   //56
+    NULL,   //57
+    NULL,   //58
+    NULL,   //59
+    NULL,   //60
+    DoPUSHV,//61
+    DoPOPV, //62
+    NULL,   //63
+    NULL,   //64
+    NULL,   //65
+    NULL,   //66
+    NULL,   //67
+    NULL,   //68
+    NULL,   //69
+    NULL,   //70
+    DoDROWV,//71
+    DoCIRCLE//72
 };
 
 
@@ -159,6 +180,17 @@ ProcessorErr DoOUT(struct ProcessorStruct * processor, processor_error_storage_t
 ProcessorErr DoHLT(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     
     printf("HLT program end\n");
+    return PROCESSOR_NO_ERROR;
+}
+ProcessorErr DoIn(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int value = 0;
+    if (scanf("%d", &value) != 1) {
+        printf("ERROR: invalid IN\n");
+        return PROCESSOR_WAS_ERROR;
+    }
+    if (StackPush(&processor->data, value, NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
     return PROCESSOR_NO_ERROR;
 }
 ProcessorErr DoPUSHR(struct ProcessorStruct * processor, processor_error_storage_type * err) {
@@ -286,7 +318,7 @@ ProcessorErr DoPUSHM(struct ProcessorStruct * processor, processor_error_storage
         return PROCESSOR_WAS_ERROR;
         break;
     }
-    if (StackPush(&processor->data, RAM[index], NULL)) {
+    if (StackPush(&processor->data, processor->ram[index], NULL)) {
         return PROCESSOR_WAS_ERROR;
     }
     return PROCESSOR_NO_ERROR;
@@ -311,7 +343,7 @@ ProcessorErr DoPOPM(struct ProcessorStruct * processor, processor_error_storage_
         return PROCESSOR_WAS_ERROR;
         break;
     }
-    if (StackPop(&processor->data, RAM + index, NULL)) {
+    if (StackPop(&processor->data, processor->ram + index, NULL)) {
         return PROCESSOR_WAS_ERROR;
     }
     return PROCESSOR_NO_ERROR;
@@ -320,14 +352,74 @@ ProcessorErr DoPOPM(struct ProcessorStruct * processor, processor_error_storage_
 ProcessorErr DoDROW(struct ProcessorStruct * processor, processor_error_storage_type * err) {
     for (int y = 0; y < RAMY; y++) {
         for (int x = 0; x < RAMX; x++) {
-            printf("%3d ", RAM[y * RAMX + x]);
+            printf("%3d ", processor->ram[y * RAMX + x]);
+        }
+        printf("\n");
+    }
+    return PROCESSOR_NO_ERROR;
+}
+//////////////////////////////////////////////////////////////////
+
+ProcessorErr DoPUSHV(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int x = processor->code[processor->program_counter++];
+    int y = processor->code[processor->program_counter++];
+
+    if (x < 0 || x >= processor->x || y < 0 || y >= processor->y) {
+        printf("ERROR: invalid indexes in PUSHV x = %d y = %d\n", x, y);
+        return PROCESSOR_WAS_ERROR;
+    }
+
+    if (StackPush(&processor->data, processor->vram[x + y * processor->x], NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+    return PROCESSOR_NO_ERROR;
+}
+ProcessorErr DoPOPV (struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    int x = processor->code[processor->program_counter++];
+    int y = processor->code[processor->program_counter++];
+
+    if (x < 0 || x >= processor->x || y < 0 || y >= processor->y) {
+        printf("ERROR: invalid indexes in PUSHV x = %d y = %d\n", x, y);
+        return PROCESSOR_WAS_ERROR;
+    }
+
+    int value = 0;
+    if (StackPop(&processor->data, &value, NULL)) {
+        return PROCESSOR_WAS_ERROR;
+    }
+
+    processor->vram[x + y * processor->x] = (char) value;
+    return PROCESSOR_NO_ERROR;
+}
+ProcessorErr DoDROWV(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    for (int y = 0; y < processor->y; y++) {
+        for (int x = 0; x < processor->x; x++) {
+            printf("%c", processor->vram[y * processor->x + x]);
         }
         printf("\n");
     }
     return PROCESSOR_NO_ERROR;
 }
 
-
+ProcessorErr DoCIRCLE(struct ProcessorStruct * processor, processor_error_storage_type * err) {
+    double x_0 = ((double) processor->x + 1) / 2;
+    double y_0 = ((double) processor->y + 1) / 2;
+    int r = processor->code[processor->program_counter++];
+    //printf("x0 = %lf, y0 = %lf, r = %d\n", x_0, y_0, r);
+    for (double x = 0; x < processor->x; x++) {
+        for (double y = 0; y < processor->y; y++) {
+            if (((x - x_0) * (x - x_0) + (y - y_0) * (y - y_0)) <= r * r) {
+                processor->vram[(int)x + (int)(y * processor->y)] = '#';
+                //printf("#");
+            } else {
+                processor->vram[(int)x + (int)(y * processor->y)] = ' ';
+                //printf(" ");
+            }
+        }
+        //printf("\n");
+    }
+    return PROCESSOR_NO_ERROR;
+}
 
 
 

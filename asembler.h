@@ -12,6 +12,7 @@
  *              11-20 связаные с регисторами
  *              21-40 связаные с метками и прыжками
  *              41-60 связаные с оперативной памятью
+ *              61-80 связаные с видео памятью
  */
 enum AssemblerComandsEnum {
     ASM_PUSH = 1,
@@ -23,7 +24,7 @@ enum AssemblerComandsEnum {
     ASM_SQRT = 7,
     ASM_OUT  = 8,
     ASM_HLT  = 9,
-    //10
+    ASM_IN   = 10,
     ASM_PUSHR= 11,
     ASM_POPR = 12,
     //13
@@ -64,7 +65,28 @@ enum AssemblerComandsEnum {
     //48
     //49
     //50
-    ASM_DROW = 51
+    ASM_DROW = 51,
+    //52
+    //53
+    //54
+    //55
+    //56
+    //57
+    //58
+    //59
+    //60
+    ASM_PUSHV = 61,
+    ASM_POPV  = 62,
+    //63
+    //64
+    //65
+    //66
+    //67
+    //68
+    //69
+    //70
+    ASM_DROWV  = 71,
+    ASM_CIRCLE = 72
 };
 
 
@@ -93,7 +115,7 @@ const struct AssemblerComand Assembler_Comands_massiv[] = {
     {"ASM_SQRT", ASM_SQRT, 0, 7},            // 7
     {"ASM_OUT" , ASM_OUT , 0, 8},            // 8
     {"ASM_HLT" , ASM_HLT , 0, 9},            // 9
-    {"", 0, 0, 0},                           // 10
+    {"ASM_IN"  , ASM_IN  , 0, 10},           // 10
     {"ASM_PUSHR", ASM_PUSHR, 1, 11},         // 11
     {"ASM_POPR", ASM_POPR  , 1, 12},         // 12
     {"", 0, 0, 0},                           // 13
@@ -134,11 +156,30 @@ const struct AssemblerComand Assembler_Comands_massiv[] = {
     {"", 0, 0, 0},                           // 48
     {"", 0, 0, 0},                           // 49
     {"", 0, 0, 0},                           // 50
-    {"ASM_DROW", ASM_DROW, 0, 51}            // 51
+    {"ASM_DROW", ASM_DROW, 0, 51},           // 51
+    {"", 0, 0, 0},                           // 52
+    {"", 0, 0, 0},                           // 53
+    {"", 0, 0, 0},                           // 54
+    {"", 0, 0, 0},                           // 55
+    {"", 0, 0, 0},                           // 56
+    {"", 0, 0, 0},                           // 57
+    {"", 0, 0, 0},                           // 58
+    {"", 0, 0, 0},                           // 59
+    {"", 0, 0, 0},                           // 60
+    {"ASM_PUSHV", ASM_PUSHV, 0, 61},         // 61
+    {"ASM_POPV" , ASM_POPV , 0, 62},         // 62
+    {"", 0, 0, 0},                           // 63
+    {"", 0, 0, 0},                           // 64
+    {"", 0, 0, 0},                           // 65
+    {"", 0, 0, 0},                           // 66
+    {"", 0, 0, 0},                           // 67
+    {"", 0, 0, 0},                           // 68
+    {"", 0, 0, 0},                           // 69
+    {"", 0, 0, 0},                           // 70
+    {"ASM_DROWV",  ASM_DROWV,  0, 71},       // 71
+    {"ASM_CIRCLE", ASM_CIRCLE, 0, 72}        // 72
 };
-#define COMMANDS_AMOUNT (sizeof(Assembler_Comands_massiv) / sizeof(Assembler_Comands_massiv[0]))
-
-
+const size_t COMMANDS_AMOUNT = sizeof(Assembler_Comands_massiv) / sizeof(Assembler_Comands_massiv[0]);
 
 enum Registers {
     RA = 0,  // 0
