@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-void assembler_init(AssemblerStruct * assembler, FILE * machine_text, line * comands, int comands_amount) {
+void assembler_init(AssemblerStruct * assembler, char * machine_text, line * comands, int comands_amount) {
     assert(machine_text);
     assert(assembler);
     assert(comands);
@@ -43,7 +43,7 @@ int run_preparing(AssemblerStruct * assembler, char * human_file, char * machine
         return 1;
     }
     printf("%s\n", comands->begin);////не обязательно
-
+    /*
     FILE * machine_text = fopen(machine_file, "wb");
     if (machine_text == NULL) {
         printf("Cannot create machine code file\n");
@@ -51,10 +51,11 @@ int run_preparing(AssemblerStruct * assembler, char * human_file, char * machine
         free(comands);
         return 1;
     }
+    */
 
     //НАЧАЛО ЗАПИСИ В СТРУКТУРУ
 
-    assembler_init(assembler, machine_text, comands, comand_amount);
+    assembler_init(assembler, machine_file, comands, comand_amount);
     return 0;
 }
 
@@ -74,8 +75,8 @@ int check_calculate_comand(struct line * comands, size_t index, const char * com
 #define CHECK_CALCULATE_COMAND(comands, index, comand) check_calculate_comand(comands, index, comand, sizeof(comand) - 1)
 
 int fwrite_register(AssemblerStruct * assembler, const char * now_register) {
-    for (int reg = 0; (unsigned long)reg < (sizeof(RegisterNames) / sizeof(RegisterNames[0])); reg++) {//------------
-        if (strncmp(now_register, RegisterNames[reg], 2) == 0) {//-------------
+    for (int reg = 0; (unsigned long)reg < REGISTERS_AMOUNT; reg++) {
+        if (strncmp(now_register, RegisterNames[reg], REGISTERS_LENGTH) == 0) {
             printf("register %s", RegisterNames[reg]);////////////////////////////
             assembler->machine_code[assembler->machine_index++] = reg;
             return 0;
@@ -144,7 +145,7 @@ int check_jumps(AssemblerStruct * assembler, size_t i, int cmd, int now_comand_l
 }
 
 int check_arguments(AssemblerStruct * assembler, size_t i, int cmd, int now_comand_length) {
-    if (cmd == ASM_PUSH ||cmd == ASM_CIRCLE) {
+    if (cmd == ASM_PUSH || cmd == ASM_CIRCLE) {
 
         int value = atoi(assembler->comands[i].begin + now_comand_length);
         printf("(number %2d) %d", assembler->ip , value);
@@ -335,11 +336,17 @@ int running_assembler(AssemblerStruct * assembler) {
 }
 
 int make_machine_file(AssemblerStruct * assembler) {
-    if (fwrite(assembler->machine_code, sizeof(int), assembler->machine_index, assembler->machine_text) != assembler->machine_index) {
+    FILE * machine_text = fopen(assembler->machine_text, "wb");
+    if (machine_text == NULL) {
+        printf("Cannot create machine code file\n");
+        return 1;
+    }
+    if (fwrite(assembler->machine_code, sizeof(int), assembler->machine_index, machine_text) != assembler->machine_index) {
         printf("ERROR: fwrite error in machine file\n");
         return 1;
     }
     printf("SUCESSFULL fwrite in machine file\n");
+    fclose(machine_text);
     return 0;
 }
 
@@ -353,109 +360,6 @@ int main() {
     char human_file[] = "human_cmd3.txt";
     char machine_file[] = "macine_cmd.txt";
     if (run_preparing(&assembler, human_file, machine_file)) return 1;
-
-    /*
-    char human_file[] = "human_cmd.txt";
-    char human_file[] = "human_cmd.txt";
-    size_t read = 0;
-    char * whole_human_text = readfile(human_file, &read);
-    if (whole_human_text == NULL) {
-        printf("Human file was not opened\n");
-        return 1;
-    }
-
-    int comand_amount = count_lines(whole_human_text);
-    printf("comands amount %d\n\n", comand_amount);
-    struct line * comands = make_line_massive(whole_human_text, comand_amount);
-    if (comands == NULL) {
-        printf("memory was not allocated");
-        free(whole_human_text);
-        return 1;
-    }
-    printf("%s\n", comands->begin);
-
-    FILE * machine_text = fopen("macine_cmd.txt", "wb");
-    if (machine_text == NULL) {
-        printf("Cannot create machine code file\n");
-        free(whole_human_text);
-        free(comands);
-        return 1;
-    }
-    */
-
-
-    /*
-    ///НАЧАЛО СКАНИРОВАНИЯ И ПЕРЕВОДА В КОД
-
-    for (int dobule_run = 0; dobule_run < 2; dobule_run++) {
-
-        int ip = 0;
-        printf("-----RUN %d-----\n", dobule_run + 1);
-
-
-        for (size_t i = 0; i < comand_amount; i++) {
-            //НАЧАЛО ПРОВЕРКИ НА МЕТКУ
-            int label_res = 0;
-            if ((label_res = check_label(comands, labels, i, ip))) {
-                if (label_res == -1) printf("Soft ERROR label was not detected don't miss that\n\n");
-                continue;
-            }
-            //КОНЕЦ ПРОВЕРКИ НА МЕТКУ
-            
-
-            int now_comand_length = 0;
-            while (now_comand_length < COMANDS_MAX_LENGTH && 
-                   comands[i].begin[now_comand_length] != '\0' && 
-                   comands[i].begin[now_comand_length] != ' '  && 
-                   comands[i].begin[now_comand_length] != '\t' && 
-                   comands[i].begin[now_comand_length] != '\n') {
-                now_comand_length++;
-            }
-            if (now_comand_length == 0) continue;//ПРОПУСК СТРОКИ
-            printf("line %2d ", (int)i);////////////////////
-
-            int command_found = 0;//ФЛАГ ДЛЯ ПРОВЕРКИ НАШЛАСЬ ЛИ КОМАНДА
-
-            for (int cmd = 0; cmd < (sizeof(ComandNames) / sizeof(ComandNames[0])); cmd++) {
-                //ПРОПУСТИТЬ ЕСЛИ ЭТО ПУСТАЯ КОМАНДА
-                if (ComandNames[cmd][0] == '\0') continue;
-                //ПРОПУСТИТЬ ЕСЛИ КОМАНДА НЕ СОВПАЛА
-                if (strncmp(comands[i].begin, ComandNames[cmd] + 4, now_comand_length) != 0 || now_comand_length != strlen(ComandNames[cmd]) - 4) continue;
-
-                
-                //ЗАПИСЬ КОМАНДЫ В ТЕКСТОВИК ДЛЯ ПРОЦЕССОРА
-                if (write_comand(machine_text, cmd, &ip, &command_found, dobule_run)) return 1;
-                //КОНЕЦ ЗАПИСИ ДАЛЕЕ ИДУТ ПРОВЕРКИ НА АРГУМЕНТЫ
-
-
-                //----------------------
-                //ПРОВЕРКИ НА АРГУМЕНТЫ:
-                //----------------------
-                
-                
-                //ПРОВЕРКИ НА ПРЫЖКИ И ЗАПИСИ АЙПИШНИКОВ ПРИЖКОВ
-                if (check_jumps(machine_text, comands, labels, i, cmd, now_comand_length, &ip, dobule_run)) return 1;
-                
-                //КОНЕЦ ПРОВЕРКИ НА ПРЫЖКИ
-
-
-                //НАЧАЛО ПРОВЕРКИ НА РАБОТУ С АРГУМЕНТАМИ ВНУТРИ ПРОЦЕССОРА
-                if (check_arguments(machine_text, comands, labels, i, cmd, now_comand_length, &ip, dobule_run)) return 1;
-                
-                //КОНЕЦ  ПРОВЕРКИ НА РАБОТУ С ОПЕРАТИСНОЙ ПОМЯТЬЮ
-                
-
-
-                printf("\n");////////////////
-            }
-            
-            if (command_found == 0) {
-                printf("not found comand\n");
-                return 1;
-            }
-        }
-    }
-    */
 
 
     assembler.double_run = 0;
@@ -473,8 +377,6 @@ int main() {
     }
 
     make_machine_file(&assembler);
-
-    fclose(assembler.machine_text);
     //fclose(machine_text);
 
     //free(whole_human_text);

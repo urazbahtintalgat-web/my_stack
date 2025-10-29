@@ -218,9 +218,11 @@ const char RegisterNames[][3] = {
     "RO",  // 14
     "RP"   // 15
 };
+const size_t REGISTERS_AMOUNT = sizeof(RegisterNames) / sizeof(RegisterNames[0]);
+const size_t REGISTERS_LENGTH = 2;
 
 struct AssemblerStruct {
-    FILE * machine_text;
+    const char * machine_text;
     struct line * comands;
     int comands_amount;
     int labels[LABEL_AMOUNT] = {0};
